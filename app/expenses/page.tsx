@@ -1,100 +1,84 @@
 // Purpose: Expense tracking with receipt upload and add dialog
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Plus, MoreVertical, Edit, Trash2 } from 'lucide-react';
-import { Download, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
-import { expenseSchema, type Expense } from '@/types/schemas';
-import { formatCurrency } from '@/lib/money';
+} from "@/components/ui/select";
+import { Plus, MoreVertical, Edit, Trash2 } from "lucide-react";
+import { Download, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
+import { expenseSchema, type Expense } from "@/types/schemas";
+import { formatCurrency } from "@/lib/money";
+import { useExpensesRealtime } from "@/hooks/use-expenses-realtime";
 
 interface ExpenseRecord extends Expense {
   id: string;
   created_at: string;
 }
 
-const mockExpenses: ExpenseRecord[] = [
-  {
-    id: '1',
-    amount: 89.99,
-    description: 'Adobe Creative Cloud Subscription',
-    category: 'Software',
-    merchant: 'Adobe',
-    date: '2024-12-01',
-    created_at: '2024-12-01T10:00:00Z',
-  },
-  {
-    id: '2',
-    amount: 45.20,
-    description: 'Client meeting lunch',
-    category: 'Meals & Entertainment',
-    merchant: 'Corner Bistro',
-    date: '2024-12-15',
-    created_at: '2024-12-15T13:30:00Z',
-  },
-];
-
 const expenseCategories = [
-  'Software',
-  'Subscriptions',
-  'Hardware',
-  'Office Supplies',
-  'Stock/Inventory',
-  'Meals & Entertainment',
-  'Business Meetings',
-  'Travel',
-  'Gas & Fuel',
-  'Vehicle Expenses',
-  'Marketing',
-  'Advertising',
-  'Education',
-  'Training & Courses',
-  'Insurance',
-  'Legal & Professional',
-  'Utilities',
-  'Internet & Phone',
-  'Rent & Facilities',
-  'Equipment Rental',
-  'Maintenance & Repairs',
-  'Banking & Fees',
-  'Taxes & Licenses',
-  'Other',
+  "Software",
+  "Subscriptions",
+  "Hardware",
+  "Office Supplies",
+  "Stock/Inventory",
+  "Meals & Entertainment",
+  "Business Meetings",
+  "Travel",
+  "Gas & Fuel",
+  "Vehicle Expenses",
+  "Marketing",
+  "Advertising",
+  "Education",
+  "Training & Courses",
+  "Insurance",
+  "Legal & Professional",
+  "Utilities",
+  "Internet & Phone",
+  "Rent & Facilities",
+  "Equipment Rental",
+  "Maintenance & Repairs",
+  "Banking & Fees",
+  "Taxes & Licenses",
+  "Other",
 ];
 
 export default function ExpensesPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [editingRecord, setEditingRecord] = useState<ExpenseRecord | null>(null);
+  const [editingRecord, setEditingRecord] = useState<ExpenseRecord | null>(
+    null
+  );
   const [exportFromDate, setExportFromDate] = useState(
-    new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0]
+    new Date(new Date().getFullYear(), new Date().getMonth(), 1)
+      .toISOString()
+      .split("T")[0]
   );
   const [exportToDate, setExportToDate] = useState(
-    new Date().toISOString().split('T')[0]
+    new Date().toISOString().split("T")[0]
   );
   const [isExporting, setIsExporting] = useState(false);
 
@@ -105,10 +89,10 @@ export default function ExpensesPage() {
     resolver: zodResolver(expenseSchema),
     defaultValues: {
       amount: 0,
-      description: '',
-      category: '',
-      merchant: '',
-      date: new Date().toISOString().split('T')[0],
+      description: "",
+      category: "",
+      merchant: "",
+      date: new Date().toISOString().split("T")[0],
     },
   });
 
@@ -118,7 +102,7 @@ export default function ExpensesPage() {
       amount: record.amount,
       description: record.description,
       category: record.category,
-      merchant: record.merchant || '',
+      merchant: record.merchant || "",
       date: record.date,
     });
     setIsDialogOpen(true);
@@ -128,18 +112,18 @@ export default function ExpensesPage() {
     setEditingRecord(null);
     form.reset({
       amount: 0,
-      description: '',
-      category: '',
-      merchant: '',
-      date: new Date().toISOString().split('T')[0],
+      description: "",
+      category: "",
+      merchant: "",
+      date: new Date().toISOString().split("T")[0],
     });
     setIsDialogOpen(false);
   };
 
   const deleteRecord = (id: string) => {
-    if (confirm('Are you sure you want to delete this expense record?')) {
+    if (confirm("Are you sure you want to delete this expense record?")) {
       // TODO: Implement server action to delete expense record
-      console.log('Deleting expense record:', id);
+      console.log("Deleting expense record:", id);
     }
   };
 
@@ -148,39 +132,47 @@ export default function ExpensesPage() {
     try {
       if (editingRecord) {
         // TODO: Implement server action to update expense record
-        console.log('Updating expense record:', editingRecord.id, data);
+        console.log("Updating expense record:", editingRecord.id, data);
       } else {
         // TODO: Implement server action to create expense record
-        console.log('Creating expense record:', data);
+        console.log("Creating expense record:", data);
       }
       cancelEdit();
     } catch (error) {
-      console.error('Error saving expense record:', error);
+      console.error("Error saving expense record:", error);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const totalExpenses = mockExpenses.reduce((sum, record) => sum + record.amount, 0);
+  const { expenses, loading } = useExpensesRealtime();
+
+  const totalExpenses = expenses.reduce(
+    (sum, record) => sum + record.amount,
+    0
+  );
 
   // Calculate monthly expenses
   const getMonthlyExpenses = (month: Date) => {
     const monthStart = new Date(month.getFullYear(), month.getMonth(), 1);
     const monthEnd = new Date(month.getFullYear(), month.getMonth() + 1, 0);
-    
-    return mockExpenses.filter(expense => {
+
+    return expenses.filter((expense) => {
       const expenseDate = new Date(expense.date);
       return expenseDate >= monthStart && expenseDate <= monthEnd;
     });
   };
 
   const monthlyExpenses = getMonthlyExpenses(selectedMonth);
-  const monthlyTotal = monthlyExpenses.reduce((sum, record) => sum + record.amount, 0);
+  const monthlyTotal = monthlyExpenses.reduce(
+    (sum, record) => sum + record.amount,
+    0
+  );
 
-  const navigateMonth = (direction: 'prev' | 'next') => {
-    setSelectedMonth(prev => {
+  const navigateMonth = (direction: "prev" | "next") => {
+    setSelectedMonth((prev) => {
       const newDate = new Date(prev);
-      if (direction === 'prev') {
+      if (direction === "prev") {
         newDate.setMonth(prev.getMonth() - 1);
       } else {
         newDate.setMonth(prev.getMonth() + 1);
@@ -195,14 +187,14 @@ export default function ExpensesPage() {
       const response = await fetch(
         `/api/export/expenses?from=${exportFromDate}&to=${exportToDate}`
       );
-      
+
       if (!response.ok) {
-        throw new Error('Export failed');
+        throw new Error("Export failed");
       }
-      
+
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
       a.download = `expenses-${exportFromDate}-to-${exportToDate}.csv`;
       document.body.appendChild(a);
@@ -210,8 +202,8 @@ export default function ExpensesPage() {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (error) {
-      console.error('Export error:', error);
-      alert('Failed to export expenses. Please try again.');
+      console.error("Export error:", error);
+      alert("Failed to export expenses. Please try again.");
     } finally {
       setIsExporting(false);
     }
@@ -222,9 +214,7 @@ export default function ExpensesPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Expenses</h1>
-          <p className="text-muted-foreground">
-            Track your business expenses
-          </p>
+          <p className="text-muted-foreground">Track your business expenses</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-2">
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -235,99 +225,91 @@ export default function ExpensesPage() {
               </Button>
             </DialogTrigger>
             <DialogContent>
-            <DialogHeader>
-              <DialogTitle>
-                {editingRecord ? 'Edit Expense Record' : 'Add Expense Record'}
-              </DialogTitle>
-            </DialogHeader>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <div>
-                <Label htmlFor="amount">Amount</Label>
-                <Input
-                  id="amount"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  {...form.register('amount', { valueAsNumber: true })}
-                />
-                {form.formState.errors.amount && (
-                  <p className="text-sm text-red-500 mt-1">
-                    {form.formState.errors.amount.message}
-                  </p>
-                )}
-              </div>
-              <div>
-                <Label htmlFor="description">Description</Label>
-                <Input
-                  id="description"
-                  {...form.register('description')}
-                />
-                {form.formState.errors.description && (
-                  <p className="text-sm text-red-500 mt-1">
-                    {form.formState.errors.description.message}
-                  </p>
-                )}
-              </div>
-              <div>
-                <Label>Category</Label>
-                <Select
-                  value={form.watch('category')}
-                  onValueChange={(value) => form.setValue('category', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {expenseCategories.map((category) => (
-                      <SelectItem key={category} value={category}>
-                        {category}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {form.formState.errors.category && (
-                  <p className="text-sm text-red-500 mt-1">
-                    {form.formState.errors.category.message}
-                  </p>
-                )}
-              </div>
-              <div>
-                <Label htmlFor="merchant">Merchant (Optional)</Label>
-                <Input
-                  id="merchant"
-                  {...form.register('merchant')}
-                />
-              </div>
-              <div>
-                <Label htmlFor="date">Date</Label>
-                <Input
-                  id="date"
-                  type="date"
-                  {...form.register('date')}
-                />
-                {form.formState.errors.date && (
-                  <p className="text-sm text-red-500 mt-1">
-                    {form.formState.errors.date.message}
-                  </p>
-                )}
-              </div>
-              <div className="flex justify-end gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={cancelEdit}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting 
-                    ? (editingRecord ? 'Updating...' : 'Adding...') 
-                    : (editingRecord ? 'Update Expense' : 'Add Expense')
-                  }
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
+              <DialogHeader>
+                <DialogTitle>
+                  {editingRecord ? "Edit Expense Record" : "Add Expense Record"}
+                </DialogTitle>
+              </DialogHeader>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-4"
+              >
+                <div>
+                  <Label htmlFor="amount">Amount</Label>
+                  <Input
+                    id="amount"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    {...form.register("amount", { valueAsNumber: true })}
+                  />
+                  {form.formState.errors.amount && (
+                    <p className="text-sm text-red-500 mt-1">
+                      {form.formState.errors.amount.message}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <Label htmlFor="description">Description</Label>
+                  <Input id="description" {...form.register("description")} />
+                  {form.formState.errors.description && (
+                    <p className="text-sm text-red-500 mt-1">
+                      {form.formState.errors.description.message}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <Label>Category</Label>
+                  <Select
+                    value={form.watch("category")}
+                    onValueChange={(value) => form.setValue("category", value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {expenseCategories.map((category) => (
+                        <SelectItem key={category} value={category}>
+                          {category}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {form.formState.errors.category && (
+                    <p className="text-sm text-red-500 mt-1">
+                      {form.formState.errors.category.message}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <Label htmlFor="merchant">Merchant (Optional)</Label>
+                  <Input id="merchant" {...form.register("merchant")} />
+                </div>
+                <div>
+                  <Label htmlFor="date">Date</Label>
+                  <Input id="date" type="date" {...form.register("date")} />
+                  {form.formState.errors.date && (
+                    <p className="text-sm text-red-500 mt-1">
+                      {form.formState.errors.date.message}
+                    </p>
+                  )}
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button type="button" variant="outline" onClick={cancelEdit}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting
+                      ? editingRecord
+                        ? "Updating..."
+                        : "Adding..."
+                      : editingRecord
+                      ? "Update Expense"
+                      : "Add Expense"}
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
           </Dialog>
         </div>
       </div>
@@ -352,21 +334,21 @@ export default function ExpensesPage() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => navigateMonth('prev')}
+                  onClick={() => navigateMonth("prev")}
                   className="h-8 w-8 p-0"
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
                 <span className="text-sm font-medium min-w-[120px] text-center">
-                  {selectedMonth.toLocaleDateString('en-US', { 
-                    month: 'long', 
-                    year: 'numeric' 
+                  {selectedMonth.toLocaleDateString("en-US", {
+                    month: "long",
+                    year: "numeric",
                   })}
                 </span>
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => navigateMonth('next')}
+                  onClick={() => navigateMonth("next")}
                   className="h-8 w-8 p-0"
                 >
                   <ChevronRight className="h-4 w-4" />
@@ -380,23 +362,32 @@ export default function ExpensesPage() {
                 {formatCurrency(monthlyTotal)}
               </div>
               <div className="text-sm text-muted-foreground">
-                {monthlyExpenses.length} expense{monthlyExpenses.length !== 1 ? 's' : ''} this month
+                {monthlyExpenses.length} expense
+                {monthlyExpenses.length !== 1 ? "s" : ""} this month
               </div>
               {monthlyExpenses.length > 0 && (
                 <div className="space-y-1">
-                  <div className="text-xs font-medium text-muted-foreground">Top Categories:</div>
+                  <div className="text-xs font-medium text-muted-foreground">
+                    Top Categories:
+                  </div>
                   {Object.entries(
                     monthlyExpenses.reduce((acc, expense) => {
-                      acc[expense.category] = (acc[expense.category] || 0) + expense.amount;
+                      acc[expense.category] =
+                        (acc[expense.category] || 0) + expense.amount;
                       return acc;
                     }, {} as Record<string, number>)
                   )
-                    .sort(([,a], [,b]) => b - a)
+                    .sort(([, a], [, b]) => b - a)
                     .slice(0, 3)
                     .map(([category, amount]) => (
-                      <div key={category} className="flex justify-between text-xs">
+                      <div
+                        key={category}
+                        className="flex justify-between text-xs"
+                      >
                         <span className="truncate">{category}</span>
-                        <span className="font-medium">{formatCurrency(amount)}</span>
+                        <span className="font-medium">
+                          {formatCurrency(amount)}
+                        </span>
                       </div>
                     ))}
                 </div>
@@ -406,13 +397,29 @@ export default function ExpensesPage() {
         </Card>
       </div>
 
-      {mockExpenses.length === 0 ? (
+      {loading ? (
         <Card>
           <CardContent className="pt-6">
             <div className="text-center py-12">
-              <h3 className="text-lg font-semibold mb-2">No expenses recorded</h3>
+              <h3 className="text-lg font-semibold mb-2">
+                Loading expenses...
+              </h3>
               <p className="text-muted-foreground mb-4">
-                Start tracking your business expenses to better manage your finances.
+                Please wait while we fetch your expense data.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      ) : expenses.length === 0 ? (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center py-12">
+              <h3 className="text-lg font-semibold mb-2">
+                No expenses recorded
+              </h3>
+              <p className="text-muted-foreground mb-4">
+                Start tracking your business expenses to better manage your
+                finances.
               </p>
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
@@ -426,16 +433,24 @@ export default function ExpensesPage() {
         </Card>
       ) : (
         <div className="grid gap-4">
-          {mockExpenses.map((record) => (
+          {expenses.map((record) => (
             <Card key={record.id}>
               <CardContent className="pt-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="space-y-1 flex-1">
                     <h3 className="font-semibold">{record.description}</h3>
                     <div className="flex flex-col sm:flex-row sm:gap-4 text-sm text-muted-foreground space-y-1 sm:space-y-0">
-                      <span className="break-words">Category: {record.category}</span>
-                      {record.merchant && <span className="break-words">Merchant: {record.merchant}</span>}
-                      <span className="break-words">Date: {new Date(record.date).toLocaleDateString()}</span>
+                      <span className="break-words">
+                        Category: {record.category}
+                      </span>
+                      {record.merchant && (
+                        <span className="break-words">
+                          Merchant: {record.merchant}
+                        </span>
+                      )}
+                      <span className="break-words">
+                        Date: {new Date(record.date).toLocaleDateString()}
+                      </span>
                     </div>
                   </div>
                   <div className="flex items-center justify-between sm:justify-end gap-2 flex-shrink-0">
@@ -444,7 +459,11 @@ export default function ExpensesPage() {
                     </div>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0"
+                        >
                           <MoreVertical className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
@@ -453,7 +472,7 @@ export default function ExpensesPage() {
                           <Edit className="h-4 w-4 mr-2" />
                           Edit
                         </DropdownMenuItem>
-                        <DropdownMenuItem 
+                        <DropdownMenuItem
                           onClick={() => deleteRecord(record.id)}
                           className="text-red-600"
                         >
@@ -498,8 +517,8 @@ export default function ExpensesPage() {
                 onChange={(e) => setExportToDate(e.target.value)}
               />
             </div>
-            <Button 
-              onClick={handleExport} 
+            <Button
+              onClick={handleExport}
               disabled={isExporting || !exportFromDate || !exportToDate}
               className="w-full sm:w-auto"
             >
@@ -517,7 +536,8 @@ export default function ExpensesPage() {
             </Button>
           </div>
           <p className="text-sm text-muted-foreground mt-2">
-            Export your expenses as a CSV file for the selected date range. Perfect for monthly tracking and tax preparation.
+            Export your expenses as a CSV file for the selected date range.
+            Perfect for monthly tracking and tax preparation.
           </p>
         </CardContent>
       </Card>
