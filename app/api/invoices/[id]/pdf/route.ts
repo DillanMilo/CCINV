@@ -10,6 +10,9 @@ export async function GET(
     const invoiceId = params.id;
     
     // TODO: Replace with actual Supabase query when invoices table exists
+    // Fetch invoice and profile from Supabase
+    const supabase = createClient();
+    // Fetch invoice (replace with real query when available)
     const mockInvoice = {
       id: '1',
       invoice_number: 'INV-2501-ABC1',
@@ -24,19 +27,32 @@ export async function GET(
         {
           description: 'Website Development',
           quantity: 1,
-          rate: 2000.00,
+          rate: 2000.0,
           tax_rate: 8.25,
           discount: 0,
         },
         {
           description: 'Logo Design',
           quantity: 1,
-          rate: 500.00,
+          rate: 500.0,
           tax_rate: 8.25,
           discount: 0,
         },
       ],
+      user_id: 'mock-user-id', // Add this for demo
     };
+    // Fetch profile (replace with real query when available)
+    let profile = {
+      company_name: 'Creative Currents',
+      ein: '12-3456789',
+      logo_url: '',
+    };
+    // const { data: profileData } = await supabase
+    //   .from('profiles')
+    //   .select('*')
+    //   .eq('user_id', mockInvoice.user_id)
+    //   .single();
+    // if (profileData) profile = profileData;
 
     const subtotal = mockInvoice.items.reduce((sum, item) => {
       const lineTotal = item.quantity * item.rate;
@@ -245,10 +261,11 @@ export async function GET(
         <body>
           <div class="header">
             <div class="logo-section">
+              ${profile.logo_url ? `<img src="${profile.logo_url}" class="logo" alt="Company Logo" />` : ''}
               <div class="company-info">
-                <div style="font-weight: 600; font-size: 16px; color: #1f2937;">Creative Currents</div>
+                <div style="font-weight: 600; font-size: 16px; color: #1f2937;">${profile.company_name}</div>
                 <div>Professional Services</div>
-                <div style="font-size: 11px; margin-top: 4px;">EIN: 12-3456789</div>
+                <div style="font-size: 11px; margin-top: 4px;">EIN: ${profile.ein || ''}</div>
               </div>
             </div>
             <div class="invoice-info">

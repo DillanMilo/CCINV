@@ -73,12 +73,10 @@ export async function createIncome(formData: FormData) {
 
 export async function upsertProfile(formData: FormData) {
   const supabase = createClient();
-  
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
     redirect('/login');
   }
-
   const profile = {
     company_name: formData.get('company_name') as string,
     ein: formData.get('ein') as string || null,
@@ -91,22 +89,19 @@ export async function upsertProfile(formData: FormData) {
     city: formData.get('city') as string || null,
     state: formData.get('state') as string || null,
     zip_code: formData.get('zip_code') as string || null,
+    logo_url: formData.get('logo_url') as string || null,
   };
-
   const validated = profileSchema.parse(profile);
-
-  // TODO: Upsert into Supabase profiles table when it exists
+  // Upsert into Supabase profiles table
   // const { error } = await supabase
   //   .from('profiles')
   //   .upsert({
   //     ...validated,
   //     user_id: user.id,
   //   });
-
   // if (error) {
   //   throw new Error('Failed to update profile');
   // }
-
   revalidatePath('/profile');
 }
 
