@@ -61,11 +61,6 @@ const statusColors = {
   paid: "default",
 } as const;
 
-export async function generateStaticParams() {
-  // TODO: Replace with actual Supabase query to get all invoice IDs
-  return [{ id: "1" }];
-}
-
 export default function InvoiceDetailPage({
   params,
 }: {
