@@ -74,16 +74,15 @@ export async function upsertProfile(formData: FormData) {
     logo_url: formData.get('logo_url') as string || null,
   };
   const validated = profileSchema.parse(profile);
-  // Upsert into Supabase profiles table
-  // const { error } = await supabase
-  //   .from('profiles')
-  //   .upsert({
-  //     ...validated,
-  //     user_id: user.id,
-  //   });
-  // if (error) {
-  //   throw new Error('Failed to update profile');
-  // }
+  const { error } = await supabase
+    .from('profiles')
+    .upsert({
+      ...validated,
+      user_id: user.id,
+    });
+  if (error) {
+    throw new Error('Failed to update profile');
+  }
   revalidatePath('/profile');
 }
 
