@@ -8,66 +8,48 @@ import { profileSchema, incomeSchema, expenseSchema, invoiceSchema } from '@/typ
 
 export async function createExpense(formData: FormData) {
   const supabase = createClient();
-  
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
     redirect('/login');
   }
-
   const expense = {
     amount: parseFloat(formData.get('amount') as string),
     description: formData.get('description') as string,
     category: formData.get('category') as string,
     merchant: formData.get('merchant') as string || null,
     date: formData.get('date') as string,
+    user_id: user.id,
   };
-
   const validated = expenseSchema.parse(expense);
-
-  // TODO: Insert into Supabase expenses table when it exists
-  // const { error } = await supabase
-  //   .from('expenses')
-  //   .insert({
-  //     ...validated,
-  //     user_id: user.id,
-  //   });
-
-  // if (error) {
-  //   throw new Error('Failed to create expense');
-  // }
-
+  const { error } = await supabase
+    .from('expenses')
+    .insert([validated]);
+  if (error) {
+    throw new Error('Failed to create expense');
+  }
   revalidatePath('/expenses');
 }
 
 export async function createIncome(formData: FormData) {
   const supabase = createClient();
-  
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
     redirect('/login');
   }
-
   const income = {
     amount: parseFloat(formData.get('amount') as string),
     description: formData.get('description') as string,
     category: formData.get('category') as string,
     date: formData.get('date') as string,
+    user_id: user.id,
   };
-
   const validated = incomeSchema.parse(income);
-
-  // TODO: Insert into Supabase income table when it exists
-  // const { error } = await supabase
-  //   .from('income')
-  //   .insert({
-  //     ...validated,
-  //     user_id: user.id,
-  //   });
-
-  // if (error) {
-  //   throw new Error('Failed to create income');
-  // }
-
+  const { error } = await supabase
+    .from('income')
+    .insert([validated]);
+  if (error) {
+    throw new Error('Failed to create income');
+  }
   revalidatePath('/income');
 }
 
