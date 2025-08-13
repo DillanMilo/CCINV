@@ -13,8 +13,10 @@ import { Upload } from "lucide-react";
 import { profileSchema, type Profile } from "@/types/schemas";
 import { upsertProfile } from "@/lib/actions";
 import { createClient } from "@/lib/supabase-browser";
+import { useRequireAuth } from "@/hooks/useRequireAuth";
 
 export default function ProfilePage() {
+  useRequireAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);

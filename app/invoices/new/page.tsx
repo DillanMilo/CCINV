@@ -1,55 +1,59 @@
 // Purpose: Invoice creation form with line items
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useForm, useFieldArray } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { useState } from "react";
+import { useForm, useFieldArray } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Plus, Trash2 } from 'lucide-react';
-import { invoiceSchema, type Invoice } from '@/types/schemas';
-import { formatCurrency } from '@/lib/money';
-import { generateInvoiceNumber } from '@/lib/invoice-number';
+} from "@/components/ui/select";
+import { Plus, Trash2 } from "lucide-react";
+import { invoiceSchema, type Invoice } from "@/types/schemas";
+import { formatCurrency } from "@/lib/money";
+import { generateInvoiceNumber } from "@/lib/invoice-number";
+import { useRequireAuth } from "@/hooks/useRequireAuth";
 
 export default function NewInvoicePage() {
+  useRequireAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<Invoice>({
     resolver: zodResolver(invoiceSchema),
     defaultValues: {
       invoice_number: generateInvoiceNumber(),
-      issue_date: new Date().toISOString().split('T')[0],
-      due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      status: 'draft',
+      issue_date: new Date().toISOString().split("T")[0],
+      due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .split("T")[0],
+      status: "draft",
       items: [
         {
-          description: '',
+          description: "",
           quantity: 1,
           rate: 0,
           tax_rate: 0,
           discount: 0,
-        }
-      ]
+        },
+      ],
     },
   });
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
-    name: 'items',
+    name: "items",
   });
 
-  const watchedItems = form.watch('items');
-  
+  const watchedItems = form.watch("items");
+
   const calculateSubtotal = () => {
     return watchedItems.reduce((sum, item) => {
       const lineTotal = (item.quantity || 0) * (item.rate || 0);
@@ -75,10 +79,10 @@ export default function NewInvoicePage() {
     setIsSubmitting(true);
     try {
       // TODO: Implement server action to create invoice
-      console.log('Creating invoice:', data);
-      alert('Invoice created successfully!');
+      console.log("Creating invoice:", data);
+      alert("Invoice created successfully!");
     } catch (error) {
-      console.error('Error creating invoice:', error);
+      console.error("Error creating invoice:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -105,7 +109,7 @@ export default function NewInvoicePage() {
                 <Label htmlFor="invoice_number">Invoice Number</Label>
                 <Input
                   id="invoice_number"
-                  {...form.register('invoice_number')}
+                  {...form.register("invoice_number")}
                 />
                 {form.formState.errors.invoice_number && (
                   <p className="text-sm text-red-500 mt-1">
@@ -116,8 +120,8 @@ export default function NewInvoicePage() {
               <div>
                 <Label htmlFor="status">Status</Label>
                 <Select
-                  value={form.watch('status')}
-                  onValueChange={(value: any) => form.setValue('status', value)}
+                  value={form.watch("status")}
+                  onValueChange={(value: any) => form.setValue("status", value)}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -134,7 +138,7 @@ export default function NewInvoicePage() {
                 <Input
                   id="issue_date"
                   type="date"
-                  {...form.register('issue_date')}
+                  {...form.register("issue_date")}
                 />
               </div>
               <div>
@@ -142,7 +146,7 @@ export default function NewInvoicePage() {
                 <Input
                   id="due_date"
                   type="date"
-                  {...form.register('due_date')}
+                  {...form.register("due_date")}
                 />
               </div>
             </div>
@@ -158,10 +162,7 @@ export default function NewInvoicePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="client_name">Client Name</Label>
-                <Input
-                  id="client_name"
-                  {...form.register('client_name')}
-                />
+                <Input id="client_name" {...form.register("client_name")} />
                 {form.formState.errors.client_name && (
                   <p className="text-sm text-red-500 mt-1">
                     {form.formState.errors.client_name.message}
@@ -173,7 +174,7 @@ export default function NewInvoicePage() {
                 <Input
                   id="client_email"
                   type="email"
-                  {...form.register('client_email')}
+                  {...form.register("client_email")}
                 />
                 {form.formState.errors.client_email && (
                   <p className="text-sm text-red-500 mt-1">
@@ -186,7 +187,7 @@ export default function NewInvoicePage() {
               <Label htmlFor="client_address">Client Address</Label>
               <Textarea
                 id="client_address"
-                {...form.register('client_address')}
+                {...form.register("client_address")}
               />
             </div>
           </CardContent>
@@ -217,16 +218,16 @@ export default function NewInvoicePage() {
                   <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                     <div className="md:col-span-2">
                       <Label>Description</Label>
-                      <Input
-                        {...form.register(`items.${index}.description`)}
-                      />
+                      <Input {...form.register(`items.${index}.description`)} />
                     </div>
                     <div>
                       <Label>Quantity</Label>
                       <Input
                         type="number"
                         min="1"
-                        {...form.register(`items.${index}.quantity`, { valueAsNumber: true })}
+                        {...form.register(`items.${index}.quantity`, {
+                          valueAsNumber: true,
+                        })}
                       />
                     </div>
                     <div>
@@ -235,7 +236,9 @@ export default function NewInvoicePage() {
                         type="number"
                         min="0"
                         step="0.01"
-                        {...form.register(`items.${index}.rate`, { valueAsNumber: true })}
+                        {...form.register(`items.${index}.rate`, {
+                          valueAsNumber: true,
+                        })}
                       />
                     </div>
                     <div>
@@ -245,28 +248,36 @@ export default function NewInvoicePage() {
                         min="0"
                         max="100"
                         step="0.01"
-                        {...form.register(`items.${index}.tax_rate`, { valueAsNumber: true })}
+                        {...form.register(`items.${index}.tax_rate`, {
+                          valueAsNumber: true,
+                        })}
                       />
                     </div>
                   </div>
                   <div className="text-right">
                     <span className="text-sm text-muted-foreground">
-                      Line Total: {formatCurrency((watchedItems[index]?.quantity || 0) * (watchedItems[index]?.rate || 0))}
+                      Line Total:{" "}
+                      {formatCurrency(
+                        (watchedItems[index]?.quantity || 0) *
+                          (watchedItems[index]?.rate || 0)
+                      )}
                     </span>
                   </div>
                 </div>
               ))}
-              
+
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => append({
-                  description: '',
-                  quantity: 1,
-                  rate: 0,
-                  tax_rate: 0,
-                  discount: 0,
-                })}
+                onClick={() =>
+                  append({
+                    description: "",
+                    quantity: 1,
+                    rate: 0,
+                    tax_rate: 0,
+                    discount: 0,
+                  })
+                }
                 className="w-full"
               >
                 <Plus className="h-4 w-4 mr-2" />
@@ -307,7 +318,7 @@ export default function NewInvoicePage() {
           <CardContent>
             <Textarea
               placeholder="Additional notes or terms..."
-              {...form.register('notes')}
+              {...form.register("notes")}
             />
           </CardContent>
         </Card>
@@ -318,7 +329,7 @@ export default function NewInvoicePage() {
             Save as Draft
           </Button>
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Creating...' : 'Create Invoice'}
+            {isSubmitting ? "Creating..." : "Create Invoice"}
           </Button>
         </div>
       </form>

@@ -1,22 +1,24 @@
 // Purpose: Dashboard with financial overview and quick stats
-'use client';
+"use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
-import { formatCurrency } from '@/lib/money';
-import { DollarSign, FileText, TrendingUp, TrendingDown } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { formatCurrency } from "@/lib/money";
+import { DollarSign, FileText, TrendingUp, TrendingDown } from "lucide-react";
+import { useRequireAuth } from "@/hooks/useRequireAuth";
 
 export default function DashboardPage() {
+  useRequireAuth();
   // Mock data - replace with actual Supabase queries
   const stats = {
     monthToDate: {
-      income: 4250.00,
+      income: 4250.0,
       expenses: 1235.19,
       invoices: 3,
     },
     yearToDate: {
-      income: 48750.00,
+      income: 48750.0,
       expenses: 12890.45,
       invoices: 28,
     },
@@ -66,7 +68,11 @@ export default function DashboardPage() {
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className={`text-xl sm:text-2xl font-bold ${netMTD >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              <div
+                className={`text-xl sm:text-2xl font-bold ${
+                  netMTD >= 0 ? "text-green-600" : "text-red-600"
+                }`}
+              >
                 {formatCurrency(netMTD)}
               </div>
             </CardContent>
@@ -117,7 +123,11 @@ export default function DashboardPage() {
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className={`text-xl sm:text-2xl font-bold ${netYTD >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              <div
+                className={`text-xl sm:text-2xl font-bold ${
+                  netYTD >= 0 ? "text-green-600" : "text-red-600"
+                }`}
+              >
                 {formatCurrency(netYTD)}
               </div>
             </CardContent>

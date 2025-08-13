@@ -33,6 +33,7 @@ import { Download, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import { incomeSchema, type Income } from "@/types/schemas";
 import { formatCurrency } from "@/lib/money";
 import { deleteIncome } from "@/lib/actions";
+import { useRequireAuth } from "@/hooks/useRequireAuth";
 
 interface IncomeRecord extends Income {
   id: string;
@@ -68,6 +69,7 @@ const incomeCategories = [
 ];
 
 export default function IncomePage() {
+  useRequireAuth();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingRecord, setEditingRecord] = useState<IncomeRecord | null>(null);

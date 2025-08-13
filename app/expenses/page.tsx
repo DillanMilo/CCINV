@@ -34,6 +34,7 @@ import { expenseSchema, type Expense } from "@/types/schemas";
 import { formatCurrency } from "@/lib/money";
 import { useExpensesRealtime } from "@/hooks/use-expenses-realtime";
 import { deleteExpense } from "@/lib/actions";
+import { useRequireAuth } from "@/hooks/useRequireAuth";
 
 interface ExpenseRecord extends Expense {
   id: string;
@@ -68,6 +69,7 @@ const expenseCategories = [
 ];
 
 export default function ExpensesPage() {
+  useRequireAuth();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingRecord, setEditingRecord] = useState<ExpenseRecord | null>(

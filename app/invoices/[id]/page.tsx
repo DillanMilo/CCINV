@@ -1,9 +1,10 @@
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Download, Send, Edit } from 'lucide-react';
-import { formatCurrency } from '@/lib/money';
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, Download, Send, Edit } from "lucide-react";
+import { formatCurrency } from "@/lib/money";
+import { useRequireAuth } from "@/hooks/useRequireAuth";
 
 interface InvoiceDetail {
   id: string;
@@ -13,7 +14,7 @@ interface InvoiceDetail {
   client_address?: string;
   issue_date: string;
   due_date: string;
-  status: 'draft' | 'sent' | 'paid';
+  status: "draft" | "sent" | "paid";
   notes?: string;
   items: Array<{
     description: string;
@@ -25,27 +26,27 @@ interface InvoiceDetail {
 }
 
 const mockInvoice: InvoiceDetail = {
-  id: '1',
-  invoice_number: 'INV-2501-ABC1',
-  client_name: 'Acme Corp',
-  client_email: 'billing@acmecorp.com',
-  client_address: '123 Business St\nSuite 100\nNew York, NY 10001',
-  issue_date: '2024-12-15',
-  due_date: '2025-01-14',
-  status: 'paid',
-  notes: 'Thank you for your business!',
+  id: "1",
+  invoice_number: "INV-2501-ABC1",
+  client_name: "Acme Corp",
+  client_email: "billing@acmecorp.com",
+  client_address: "123 Business St\nSuite 100\nNew York, NY 10001",
+  issue_date: "2024-12-15",
+  due_date: "2025-01-14",
+  status: "paid",
+  notes: "Thank you for your business!",
   items: [
     {
-      description: 'Website Development',
+      description: "Website Development",
       quantity: 1,
-      rate: 2000.00,
+      rate: 2000.0,
       tax_rate: 8.25,
       discount: 0,
     },
     {
-      description: 'Logo Design',
+      description: "Logo Design",
       quantity: 1,
-      rate: 500.00,
+      rate: 500.0,
       tax_rate: 8.25,
       discount: 0,
     },
@@ -53,21 +54,24 @@ const mockInvoice: InvoiceDetail = {
 };
 
 const statusColors = {
-  draft: 'secondary',
-  sent: 'default',
-  paid: 'default',
+  draft: "secondary",
+  sent: "default",
+  paid: "default",
 } as const;
 
 export async function generateStaticParams() {
   // TODO: Replace with actual Supabase query to get all invoice IDs
-  return [
-    { id: '1' }
-  ];
+  return [{ id: "1" }];
 }
 
-export default function InvoiceDetailPage({ params }: { params: { id: string } }) {
+export default function InvoiceDetailPage({
+  params,
+}: {
+  params: { id: string };
+}) {
+  useRequireAuth();
   const invoiceId = params.id;
-  
+
   // TODO: Replace with actual Supabase query
   const invoice = mockInvoice;
 
@@ -125,9 +129,9 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
             </Link>
           </Button>
           <Button variant="outline">
-            <a 
-              href={`/api/invoices/${invoiceId}/pdf`} 
-              target="_blank" 
+            <a
+              href={`/api/invoices/${invoiceId}/pdf`}
+              target="_blank"
               rel="noopener noreferrer"
               className="flex items-center"
             >
@@ -135,7 +139,7 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
               <span className="hidden sm:inline">View PDF</span>
             </a>
           </Button>
-          {invoice.status !== 'paid' && (
+          {invoice.status !== "paid" && (
             <Button>
               <Send className="h-4 w-4 mr-2" />
               <span className="hidden sm:inline">Send</span>
@@ -153,15 +157,21 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
           <CardContent className="space-y-2 sm:space-y-3">
             <div className="flex justify-between items-start">
               <span className="text-muted-foreground">Invoice Number:</span>
-              <span className="font-medium text-right break-all">{invoice.invoice_number}</span>
+              <span className="font-medium text-right break-all">
+                {invoice.invoice_number}
+              </span>
             </div>
             <div className="flex justify-between items-start">
               <span className="text-muted-foreground">Issue Date:</span>
-              <span className="text-right">{new Date(invoice.issue_date).toLocaleDateString()}</span>
+              <span className="text-right">
+                {new Date(invoice.issue_date).toLocaleDateString()}
+              </span>
             </div>
             <div className="flex justify-between items-start">
               <span className="text-muted-foreground">Due Date:</span>
-              <span className="text-right">{new Date(invoice.due_date).toLocaleDateString()}</span>
+              <span className="text-right">
+                {new Date(invoice.due_date).toLocaleDateString()}
+              </span>
             </div>
             <div className="flex justify-between items-start">
               <span className="text-muted-foreground">Status:</span>
@@ -208,7 +218,10 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
               const itemTotal = afterDiscount + itemTax;
 
               return (
-                <div key={index} className="border-b pb-3 sm:pb-4 last:border-b-0">
+                <div
+                  key={index}
+                  className="border-b pb-3 sm:pb-4 last:border-b-0"
+                >
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 sm:gap-4">
                     <div className="flex-1 min-w-0">
                       <h4 className="font-medium">{item.description}</h4>
@@ -219,7 +232,9 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
                       </div>
                     </div>
                     <div className="text-right sm:text-right flex-shrink-0">
-                      <div className="font-medium text-lg sm:text-base">{formatCurrency(itemTotal)}</div>
+                      <div className="font-medium text-lg sm:text-base">
+                        {formatCurrency(itemTotal)}
+                      </div>
                     </div>
                   </div>
                 </div>
