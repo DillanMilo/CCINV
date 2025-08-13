@@ -33,6 +33,7 @@ import { Download, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import { expenseSchema, type Expense } from "@/types/schemas";
 import { formatCurrency } from "@/lib/money";
 import { useExpensesRealtime } from "@/hooks/use-expenses-realtime";
+import { deleteExpense } from "@/lib/actions";
 
 interface ExpenseRecord extends Expense {
   id: string;
@@ -120,10 +121,13 @@ export default function ExpensesPage() {
     setIsDialogOpen(false);
   };
 
-  const deleteRecord = (id: string) => {
+  const deleteRecord = async (id: string) => {
     if (confirm("Are you sure you want to delete this expense record?")) {
-      // TODO: Implement server action to delete expense record
-      console.log("Deleting expense record:", id);
+      try {
+        await deleteExpense(id);
+      } catch (error) {
+        alert("Failed to delete expense.");
+      }
     }
   };
 

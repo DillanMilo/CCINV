@@ -143,3 +143,39 @@ export async function createInvoice(formData: FormData) {
 
   revalidatePath('/invoices');
 }
+
+export async function deleteExpense(id: string) {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    redirect('/login');
+  }
+  // Delete expense for this user
+  const { error } = await supabase
+    .from('expenses')
+    .delete()
+    .eq('id', id)
+    .eq('user_id', user.id);
+  if (error) {
+    throw new Error('Failed to delete expense');
+  }
+  revalidatePath('/expenses');
+}
+
+export async function deleteIncome(id: string) {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    redirect('/login');
+  }
+  // Delete income for this user
+  const { error } = await supabase
+    .from('income')
+    .delete()
+    .eq('id', id)
+    .eq('user_id', user.id);
+  if (error) {
+    throw new Error('Failed to delete income');
+  }
+  revalidatePath('/income');
+}
