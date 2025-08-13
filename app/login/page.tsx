@@ -1,24 +1,32 @@
 // Purpose: User login/signup page using Supabase Auth UI
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { createBrowserClient } from "@supabase/ssr";
 import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
   const router = useRouter();
 
+  // Only create the client on the client side
+  const supabase = useMemo(() => {
+    if (typeof window === "undefined") return null;
+    return createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+  }, []);
+
   useEffect(() => {
+    if (!supabase) return;
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) router.replace("/");
     });
   }, [router, supabase]);
+
+  if (!supabase) return null; // Don't render on the server
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
