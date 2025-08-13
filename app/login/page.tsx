@@ -40,7 +40,9 @@ export default function LoginPage() {
           providers={[]}
           theme="default"
           redirectTo={
-            typeof window !== "undefined" ? window.location.origin : ""
+            typeof window !== "undefined"
+              ? `${window.location.origin}/auth/callback`
+              : ""
           }
         />
       </div>
