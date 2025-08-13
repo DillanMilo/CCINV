@@ -1,5 +1,5 @@
-// Purpose: Dashboard with financial overview and quick stats
 "use client";
+// Purpose: Dashboard with financial overview and quick stats
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

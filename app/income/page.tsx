@@ -1,5 +1,5 @@
-// Purpose: Income tracking with category support and add dialog
 "use client";
+// Purpose: Income tracking with category support and add dialog
 
 import { useState } from "react";
 import { useForm } from "react-hook-form";

@@ -1,5 +1,5 @@
-// Purpose: Expense tracking with receipt upload and add dialog
 "use client";
+// Purpose: Expense tracking with receipt upload and add dialog
 
 import { useState } from "react";
 import { useForm } from "react-hook-form";

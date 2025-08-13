@@ -1,5 +1,5 @@
-// Purpose: Invoice creation form with line items
 "use client";
+// Purpose: Invoice creation form with line items
 
 import { useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
