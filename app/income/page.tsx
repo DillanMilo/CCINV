@@ -32,32 +32,14 @@ import { Plus, MoreVertical, Edit, Trash2 } from "lucide-react";
 import { Download, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import { incomeSchema, type Income } from "@/types/schemas";
 import { formatCurrency } from "@/lib/money";
-import { deleteIncome } from "@/lib/actions";
+import { deleteIncome, createIncome, updateIncome } from "@/lib/actions";
+import { useIncomeRealtime } from "@/hooks/use-income-realtime";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
 
 interface IncomeRecord extends Income {
   id: string;
   created_at: string;
 }
-
-const mockIncome: IncomeRecord[] = [
-  {
-    id: "1",
-    amount: 2500.0,
-    description: "Website Development - Acme Corp",
-    category: "Services",
-    date: "2024-12-15",
-    created_at: "2024-12-15T10:00:00Z",
-  },
-  {
-    id: "2",
-    amount: 150.0,
-    description: "Client appreciation tip",
-    category: "Tips",
-    date: "2024-12-20",
-    created_at: "2024-12-20T14:30:00Z",
-  },
-];
 
 const incomeCategories = [
   "Services",
@@ -85,6 +67,8 @@ export default function IncomePage() {
 
   // Monthly breakdown state
   const [selectedMonth, setSelectedMonth] = useState(new Date());
+
+  const { income, loading } = useIncomeRealtime();
 
   const form = useForm<Income>({
     resolver: zodResolver(incomeSchema),
@@ -131,22 +115,27 @@ export default function IncomePage() {
   const onSubmit = async (data: Income) => {
     setIsSubmitting(true);
     try {
+      const formData = new FormData();
+      formData.append('amount', data.amount.toString());
+      formData.append('description', data.description);
+      formData.append('category', data.category);
+      formData.append('date', data.date);
+
       if (editingRecord) {
-        // TODO: Implement server action to update income record
-        console.log("Updating income record:", editingRecord.id, data);
+        await updateIncome(editingRecord.id, formData);
       } else {
-        // TODO: Implement server action to create income record
-        console.log("Creating income record:", data);
+        await createIncome(formData);
       }
       cancelEdit();
     } catch (error) {
       console.error("Error saving income record:", error);
+      alert("Failed to save income record.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const totalIncome = mockIncome.reduce(
+  const totalIncome = income.reduce(
     (sum, record) => sum + record.amount,
     0
   );
@@ -156,8 +145,8 @@ export default function IncomePage() {
     const monthStart = new Date(month.getFullYear(), month.getMonth(), 1);
     const monthEnd = new Date(month.getFullYear(), month.getMonth() + 1, 0);
 
-    return mockIncome.filter((income) => {
-      const incomeDate = new Date(income.date);
+    return income.filter((incomeRecord) => {
+      const incomeDate = new Date(incomeRecord.date);
       return incomeDate >= monthStart && incomeDate <= monthEnd;
     });
   };
@@ -311,17 +300,31 @@ export default function IncomePage() {
         </div>
       </div>
 
-      <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
+      {loading ? (
         <Card>
-          <CardHeader>
-            <CardTitle>Total Income</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-green-600">
-              {formatCurrency(totalIncome)}
+          <CardContent className="pt-6">
+            <div className="text-center py-12">
+              <h3 className="text-lg font-semibold mb-2">
+                Loading income...
+              </h3>
+              <p className="text-muted-foreground mb-4">
+                Please wait while we fetch your income data.
+              </p>
             </div>
           </CardContent>
         </Card>
+      ) : (
+        <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>Total Income</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-green-600">
+                {formatCurrency(totalIncome)}
+              </div>
+            </CardContent>
+          </Card>
 
         <Card>
           <CardHeader>
@@ -394,7 +397,7 @@ export default function IncomePage() {
         </Card>
       </div>
 
-      {mockIncome.length === 0 ? (
+      {income.length === 0 ? (
         <Card>
           <CardContent className="pt-6">
             <div className="text-center py-12">
@@ -414,7 +417,7 @@ export default function IncomePage() {
         </Card>
       ) : (
         <div className="grid gap-4">
-          {mockIncome.map((record) => (
+          {income.map((record) => (
             <Card key={record.id}>
               <CardContent className="pt-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">

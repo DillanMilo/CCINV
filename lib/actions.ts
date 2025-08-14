@@ -30,6 +30,31 @@ export async function createExpense(formData: FormData) {
   revalidatePath('/expenses');
 }
 
+export async function updateExpense(id: string, formData: FormData) {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    redirect('/login');
+  }
+  const expense = {
+    amount: parseFloat(formData.get('amount') as string),
+    description: formData.get('description') as string,
+    category: formData.get('category') as string,
+    merchant: formData.get('merchant') as string || null,
+    date: formData.get('date') as string,
+  };
+  const validated = expenseSchema.parse(expense);
+  const { error } = await supabase
+    .from('expenses')
+    .update(validated)
+    .eq('id', id)
+    .eq('user_id', user.id);
+  if (error) {
+    throw new Error('Failed to update expense');
+  }
+  revalidatePath('/expenses');
+}
+
 export async function createIncome(formData: FormData) {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -49,6 +74,30 @@ export async function createIncome(formData: FormData) {
     .insert([validated]);
   if (error) {
     throw new Error('Failed to create income');
+  }
+  revalidatePath('/income');
+}
+
+export async function updateIncome(id: string, formData: FormData) {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    redirect('/login');
+  }
+  const income = {
+    amount: parseFloat(formData.get('amount') as string),
+    description: formData.get('description') as string,
+    category: formData.get('category') as string,
+    date: formData.get('date') as string,
+  };
+  const validated = incomeSchema.parse(income);
+  const { error } = await supabase
+    .from('income')
+    .update(validated)
+    .eq('id', id)
+    .eq('user_id', user.id);
+  if (error) {
+    throw new Error('Failed to update income');
   }
   revalidatePath('/income');
 }

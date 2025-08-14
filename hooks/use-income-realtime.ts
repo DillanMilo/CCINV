@@ -1,60 +1,59 @@
-// Purpose: Real-time expenses data hook using Supabase
+// Purpose: Real-time income data hook using Supabase
 "use client";
 
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase-browser";
 
-interface Expense {
+interface Income {
   id: string;
   amount: number;
   description: string;
   category: string;
-  merchant?: string;
   date: string;
   created_at: string;
 }
 
-export function useExpensesRealtime() {
-  const [expenses, setExpenses] = useState<Expense[]>([]);
+export function useIncomeRealtime() {
+  const [income, setIncome] = useState<Income[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const supabase = createClient();
 
-    const fetchExpenses = async () => {
+    const fetchIncome = async () => {
       try {
         const { data, error } = await supabase
-          .from('expenses')
+          .from('income')
           .select('*')
           .order('created_at', { ascending: false });
 
         if (error) {
-          console.error('Error fetching expenses:', error);
+          console.error('Error fetching income:', error);
           return;
         }
 
-        setExpenses(data || []);
+        setIncome(data || []);
       } catch (error) {
-        console.error('Error fetching expenses:', error);
+        console.error('Error fetching income:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchExpenses();
+    fetchIncome();
 
     // Set up real-time subscription
     const channel = supabase
-      .channel('expenses-changes')
+      .channel('income-changes')
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
-          table: 'expenses',
+          table: 'income',
         },
         () => {
-          fetchExpenses();
+          fetchIncome();
         }
       )
       .subscribe();
@@ -64,5 +63,5 @@ export function useExpensesRealtime() {
     };
   }, []);
 
-  return { expenses, loading };
+  return { income, loading };
 }

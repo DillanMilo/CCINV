@@ -33,7 +33,7 @@ import { Download, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import { expenseSchema, type Expense } from "@/types/schemas";
 import { formatCurrency } from "@/lib/money";
 import { useExpensesRealtime } from "@/hooks/use-expenses-realtime";
-import { deleteExpense } from "@/lib/actions";
+import { deleteExpense, createExpense, updateExpense } from "@/lib/actions";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
 
 interface ExpenseRecord extends Expense {
@@ -136,16 +136,22 @@ export default function ExpensesPage() {
   const onSubmit = async (data: Expense) => {
     setIsSubmitting(true);
     try {
+      const formData = new FormData();
+      formData.append("amount", data.amount.toString());
+      formData.append("description", data.description);
+      formData.append("category", data.category);
+      formData.append("merchant", data.merchant || "");
+      formData.append("date", data.date);
+
       if (editingRecord) {
-        // TODO: Implement server action to update expense record
-        console.log("Updating expense record:", editingRecord.id, data);
+        await updateExpense(editingRecord.id, formData);
       } else {
-        // TODO: Implement server action to create expense record
-        console.log("Creating expense record:", data);
+        await createExpense(formData);
       }
       cancelEdit();
     } catch (error) {
       console.error("Error saving expense record:", error);
+      alert("Failed to save expense record.");
     } finally {
       setIsSubmitting(false);
     }
