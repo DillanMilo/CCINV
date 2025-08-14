@@ -396,6 +396,7 @@ export default function IncomePage() {
           </CardContent>
         </Card>
       </div>
+      )}
 
       {income.length === 0 ? (
         <Card>
