@@ -116,10 +116,10 @@ export default function IncomePage() {
     setIsSubmitting(true);
     try {
       const formData = new FormData();
-      formData.append('amount', data.amount.toString());
-      formData.append('description', data.description);
-      formData.append('category', data.category);
-      formData.append('date', data.date);
+      formData.append("amount", data.amount.toString());
+      formData.append("description", data.description);
+      formData.append("category", data.category);
+      formData.append("date", data.date);
 
       if (editingRecord) {
         await updateIncome(editingRecord.id, formData);
@@ -135,10 +135,7 @@ export default function IncomePage() {
     }
   };
 
-  const totalIncome = income.reduce(
-    (sum, record) => sum + record.amount,
-    0
-  );
+  const totalIncome = income.reduce((sum, record) => sum + record.amount, 0);
 
   // Calculate monthly income
   const getMonthlyIncome = (month: Date) => {
@@ -304,9 +301,7 @@ export default function IncomePage() {
         <Card>
           <CardContent className="pt-6">
             <div className="text-center py-12">
-              <h3 className="text-lg font-semibold mb-2">
-                Loading income...
-              </h3>
+              <h3 className="text-lg font-semibold mb-2">Loading income...</h3>
               <p className="text-muted-foreground mb-4">
                 Please wait while we fetch your income data.
               </p>
@@ -326,76 +321,76 @@ export default function IncomePage() {
             </CardContent>
           </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span>Monthly Income</span>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigateMonth("prev")}
-                  className="h-8 w-8 p-0"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <span className="text-sm font-medium min-w-[120px] text-center">
-                  {selectedMonth.toLocaleDateString("en-US", {
-                    month: "long",
-                    year: "numeric",
-                  })}
-                </span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigateMonth("next")}
-                  className="h-8 w-8 p-0"
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="text-2xl font-bold text-green-600">
-                {formatCurrency(monthlyTotal)}
-              </div>
-              <div className="text-sm text-muted-foreground">
-                {monthlyIncome.length} income record
-                {monthlyIncome.length !== 1 ? "s" : ""} this month
-              </div>
-              {monthlyIncome.length > 0 && (
-                <div className="space-y-1">
-                  <div className="text-xs font-medium text-muted-foreground">
-                    Top Categories:
-                  </div>
-                  {Object.entries(
-                    monthlyIncome.reduce((acc, income) => {
-                      acc[income.category] =
-                        (acc[income.category] || 0) + income.amount;
-                      return acc;
-                    }, {} as Record<string, number>)
-                  )
-                    .sort(([, a], [, b]) => b - a)
-                    .slice(0, 3)
-                    .map(([category, amount]) => (
-                      <div
-                        key={category}
-                        className="flex justify-between text-xs"
-                      >
-                        <span className="truncate">{category}</span>
-                        <span className="font-medium">
-                          {formatCurrency(amount)}
-                        </span>
-                      </div>
-                    ))}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span>Monthly Income</span>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => navigateMonth("prev")}
+                    className="h-8 w-8 p-0"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <span className="text-sm font-medium min-w-[120px] text-center">
+                    {selectedMonth.toLocaleDateString("en-US", {
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => navigateMonth("next")}
+                    className="h-8 w-8 p-0"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
                 </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="text-2xl font-bold text-green-600">
+                  {formatCurrency(monthlyTotal)}
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  {monthlyIncome.length} income record
+                  {monthlyIncome.length !== 1 ? "s" : ""} this month
+                </div>
+                {monthlyIncome.length > 0 && (
+                  <div className="space-y-1">
+                    <div className="text-xs font-medium text-muted-foreground">
+                      Top Categories:
+                    </div>
+                    {Object.entries(
+                      monthlyIncome.reduce((acc, income) => {
+                        acc[income.category] =
+                          (acc[income.category] || 0) + income.amount;
+                        return acc;
+                      }, {} as Record<string, number>)
+                    )
+                      .sort(([, a], [, b]) => b - a)
+                      .slice(0, 3)
+                      .map(([category, amount]) => (
+                        <div
+                          key={category}
+                          className="flex justify-between text-xs"
+                        >
+                          <span className="truncate">{category}</span>
+                          <span className="font-medium">
+                            {formatCurrency(amount)}
+                          </span>
+                        </div>
+                      ))}
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       )}
 
       {income.length === 0 ? (
