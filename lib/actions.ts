@@ -25,7 +25,8 @@ export async function createExpense(formData: FormData) {
     .from('expenses')
     .insert([validated]);
   if (error) {
-    throw new Error('Failed to create expense');
+    console.error('Create expense error:', error);
+    throw new Error(`Failed to create expense: ${error.message}`);
   }
   revalidatePath('/expenses');
 }
@@ -73,7 +74,8 @@ export async function createIncome(formData: FormData) {
     .from('income')
     .insert([validated]);
   if (error) {
-    throw new Error('Failed to create income');
+    console.error('Create income error:', error);
+    throw new Error(`Failed to create income: ${error.message}`);
   }
   revalidatePath('/income');
 }
@@ -103,36 +105,50 @@ export async function updateIncome(id: string, formData: FormData) {
 }
 
 export async function upsertProfile(formData: FormData) {
-  const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    redirect('/login');
+  try {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      redirect('/login');
+    }
+    
+    console.log('FormData entries:', Object.fromEntries(formData.entries()));
+    
+    const profile = {
+      company_name: formData.get('company_name') as string,
+      ein: formData.get('ein') as string || null,
+      tax_number: formData.get('tax_number') as string || null,
+      bank_name: formData.get('bank_name') as string || null,
+      account_number: formData.get('account_number') as string || null,
+      routing_number: formData.get('routing_number') as string || null,
+      address_line_1: formData.get('address_line_1') as string || null,
+      address_line_2: formData.get('address_line_2') as string || null,
+      city: formData.get('city') as string || null,
+      state: formData.get('state') as string || null,
+      zip_code: formData.get('zip_code') as string || null,
+      logo_url: formData.get('logo_url') as string || null,
+    };
+    
+    console.log('Profile data before validation:', profile);
+    
+    const validated = profileSchema.parse(profile);
+    console.log('Profile data after validation:', validated);
+    
+    const { error } = await supabase
+      .from('profiles')
+      .upsert({
+        ...validated,
+        user_id: user.id,
+      });
+    if (error) {
+      console.error('Update profile error:', error);
+      throw new Error(`Failed to update profile: ${error.message}`);
+    }
+    revalidatePath('/profile');
+  } catch (error) {
+    console.error('Full upsertProfile error:', error);
+    throw error;
   }
-  const profile = {
-    company_name: formData.get('company_name') as string,
-    ein: formData.get('ein') as string || null,
-    tax_number: formData.get('tax_number') as string || null,
-    bank_name: formData.get('bank_name') as string || null,
-    account_number: formData.get('account_number') as string || null,
-    routing_number: formData.get('routing_number') as string || null,
-    address_line_1: formData.get('address_line_1') as string || null,
-    address_line_2: formData.get('address_line_2') as string || null,
-    city: formData.get('city') as string || null,
-    state: formData.get('state') as string || null,
-    zip_code: formData.get('zip_code') as string || null,
-    logo_url: formData.get('logo_url') as string || null,
-  };
-  const validated = profileSchema.parse(profile);
-  const { error } = await supabase
-    .from('profiles')
-    .upsert({
-      ...validated,
-      user_id: user.id,
-    });
-  if (error) {
-    throw new Error('Failed to update profile');
-  }
-  revalidatePath('/profile');
 }
 
 export async function createInvoice(formData: FormData) {

@@ -69,7 +69,20 @@ const expenseCategories = [
 ];
 
 export default function ExpensesPage() {
-  useRequireAuth();
+  const { isLoading } = useRequireAuth();
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <h3 className="text-lg font-semibold mb-2">Loading...</h3>
+          <p className="text-muted-foreground">
+            Please wait while we authenticate you.
+          </p>
+        </div>
+      </div>
+    );
+  }
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingRecord, setEditingRecord] = useState<ExpenseRecord | null>(
@@ -151,13 +164,19 @@ export default function ExpensesPage() {
       cancelEdit();
     } catch (error) {
       console.error("Error saving expense record:", error);
-      alert("Failed to save expense record.");
+      alert(
+        `Failed to save expense: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const { expenses, loading } = useExpensesRealtime();
+  // Temporarily disable real data - just test auth
+  const expenses: ExpenseRecord[] = [];
+  const loading = false;
 
   const totalExpenses = expenses.reduce(
     (sum, record) => sum + record.amount,

@@ -39,6 +39,8 @@ export default function LoginPage() {
           appearance={{ theme: ThemeSupa }}
           providers={[]}
           theme="default"
+          view="sign_up"
+          showLinks={true}
           redirectTo={
             typeof window !== "undefined"
               ? `${window.location.origin}/auth/callback`

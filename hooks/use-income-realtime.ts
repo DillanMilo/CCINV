@@ -16,8 +16,16 @@ interface Income {
 export function useIncomeRealtime() {
   const [income, setIncome] = useState<Income[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Track if component is mounted on client
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
+    if (!isMounted) return;
+    
     const supabase = createClient();
 
     const fetchIncome = async () => {
@@ -61,7 +69,7 @@ export function useIncomeRealtime() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [isMounted]);
 
   return { income, loading };
 }

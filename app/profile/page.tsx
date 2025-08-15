@@ -16,7 +16,20 @@ import { createClient } from "@/lib/supabase-browser";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
 
 export default function ProfilePage() {
-  useRequireAuth();
+  const { isLoading } = useRequireAuth();
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <h3 className="text-lg font-semibold mb-2">Loading...</h3>
+          <p className="text-muted-foreground">
+            Please wait while we authenticate you.
+          </p>
+        </div>
+      </div>
+    );
+  }
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
@@ -67,7 +80,11 @@ export default function ProfilePage() {
       alert("Profile updated successfully!");
     } catch (error) {
       console.error("Error updating profile:", error);
-      alert("Failed to update profile.");
+      alert(
+        `Failed to update profile: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
     } finally {
       setIsSubmitting(false);
     }

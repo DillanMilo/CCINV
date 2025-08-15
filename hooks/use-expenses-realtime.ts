@@ -17,8 +17,16 @@ interface Expense {
 export function useExpensesRealtime() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Track if component is mounted on client
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
+    if (!isMounted) return;
+    
     const supabase = createClient();
 
     const fetchExpenses = async () => {
@@ -62,7 +70,7 @@ export function useExpensesRealtime() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [isMounted]);
 
   return { expenses, loading };
 }

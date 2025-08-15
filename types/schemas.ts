@@ -3,17 +3,17 @@ import { z } from 'zod';
 
 export const profileSchema = z.object({
   company_name: z.string().min(1, 'Company name is required'),
-  ein: z.string().optional(),
-  tax_number: z.string().optional(),
-  bank_name: z.string().optional(),
-  account_number: z.string().optional(),
-  routing_number: z.string().optional(),
-  address_line_1: z.string().optional(),
-  address_line_2: z.string().optional(),
-  city: z.string().optional(),
-  state: z.string().optional(),
-  zip_code: z.string().optional(),
-  logo_url: z.string().optional(),
+  ein: z.string().nullish().transform(val => val || null),
+  tax_number: z.string().nullish().transform(val => val || null),
+  bank_name: z.string().nullish().transform(val => val || null),
+  account_number: z.string().nullish().transform(val => val || null),
+  routing_number: z.string().nullish().transform(val => val || null),
+  address_line_1: z.string().nullish().transform(val => val || null),
+  address_line_2: z.string().nullish().transform(val => val || null),
+  city: z.string().nullish().transform(val => val || null),
+  state: z.string().nullish().transform(val => val || null),
+  zip_code: z.string().nullish().transform(val => val || null),
+  logo_url: z.string().nullish().transform(val => val || null),
 });
 
 export const incomeSchema = z.object({

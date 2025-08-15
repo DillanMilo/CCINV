@@ -51,7 +51,20 @@ const incomeCategories = [
 ];
 
 export default function IncomePage() {
-  useRequireAuth();
+  const { isLoading } = useRequireAuth();
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <h3 className="text-lg font-semibold mb-2">Loading...</h3>
+          <p className="text-muted-foreground">
+            Please wait while we authenticate you.
+          </p>
+        </div>
+      </div>
+    );
+  }
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingRecord, setEditingRecord] = useState<IncomeRecord | null>(null);
@@ -68,7 +81,9 @@ export default function IncomePage() {
   // Monthly breakdown state
   const [selectedMonth, setSelectedMonth] = useState(new Date());
 
-  const { income, loading } = useIncomeRealtime();
+  // Temporarily disable real data - just test auth
+  const income: IncomeRecord[] = [];
+  const loading = false;
 
   const form = useForm<Income>({
     resolver: zodResolver(incomeSchema),
@@ -129,7 +144,11 @@ export default function IncomePage() {
       cancelEdit();
     } catch (error) {
       console.error("Error saving income record:", error);
-      alert("Failed to save income record.");
+      alert(
+        `Failed to save income: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
     } finally {
       setIsSubmitting(false);
     }
