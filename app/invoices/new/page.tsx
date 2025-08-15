@@ -31,9 +31,6 @@ export default function NewInvoicePage() {
     client_email: "",
     client_address: "",
     issue_date: new Date().toISOString().split("T")[0],
-    due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-      .toISOString()
-      .split("T")[0],
     status: "draft" as const,
     notes: "",
     items: [
@@ -86,7 +83,6 @@ export default function NewInvoicePage() {
         client_email: formData.client_email,
         client_address: formData.client_address,
         issue_date: formData.issue_date,
-        due_date: formData.due_date,
         status: formData.status,
         notes: formData.notes,
         items: formData.items,
@@ -208,18 +204,6 @@ export default function NewInvoicePage() {
                   value={formData.issue_date}
                   onChange={(e) =>
                     setFormData({ ...formData, issue_date: e.target.value })
-                  }
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="due_date">Due Date</Label>
-                <Input
-                  id="due_date"
-                  type="date"
-                  value={formData.due_date}
-                  onChange={(e) =>
-                    setFormData({ ...formData, due_date: e.target.value })
                   }
                   required
                 />

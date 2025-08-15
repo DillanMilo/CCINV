@@ -1,6 +1,6 @@
 // Purpose: Generate PDF for invoice with consistent mobile/desktop layout
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase-client';
+import { supabase, SYNC_KEY } from '@/lib/supabase-client';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,58 +11,46 @@ export async function GET(
   try {
     const invoiceId = params.id;
     
-    // TODO: Replace with actual Supabase query when invoices table exists
-    // Fetch invoice and profile from Supabase
+    // Load data from Supabase
+    const { data: supabaseData, error } = await supabase
+      .from('app_data')
+      .select('*')
+      .eq('sync_key', SYNC_KEY)
+      .single();
 
-    // Fetch invoice (replace with real query when available)
-    const mockInvoice = {
-      id: '1',
-      invoice_number: 'INV-2501-ABC1',
-      client_name: 'Acme Corp',
-      client_email: 'billing@acmecorp.com',
-      client_address: '123 Business St\nSuite 100\nNew York, NY 10001',
-      issue_date: '2024-12-15',
-      due_date: '2025-01-14',
-      status: 'paid',
-      notes: 'Thank you for your business!',
-      items: [
-        {
-          description: 'Website Development',
-          quantity: 1,
-          rate: 2000.0,
-          tax_rate: 8.25,
-          discount: 0,
-        },
-        {
-          description: 'Logo Design',
-          quantity: 1,
-          rate: 500.0,
-          tax_rate: 8.25,
-          discount: 0,
-        },
-      ],
-      user_id: 'mock-user-id', // Add this for demo
-    };
-    // Fetch profile (replace with real query when available)
-    let profile = {
-      company_name: 'Creative Currents',
-      ein: '12-3456789',
-      logo_url: '',
-    };
-    // const { data: profileData } = await supabase
-    //   .from('profiles')
-    //   .select('*')
-    //   .eq('user_id', mockInvoice.user_id)
-    //   .single();
-    // if (profileData) profile = profileData;
+    if (error) {
+      console.error('Error loading data:', error);
+      return NextResponse.json(
+        { error: 'Failed to load invoice data' },
+        { status: 500 }
+      );
+    }
 
-    const subtotal = mockInvoice.items.reduce((sum, item) => {
+    if (!supabaseData) {
+      return NextResponse.json(
+        { error: 'No data found' },
+        { status: 404 }
+      );
+    }
+
+    const appData = JSON.parse(supabaseData.data);
+    const invoice = appData.invoices.find((inv: any) => inv.id === invoiceId);
+    const profile = appData.profile;
+
+    if (!invoice) {
+      return NextResponse.json(
+        { error: 'Invoice not found' },
+        { status: 404 }
+      );
+    }
+
+    const subtotal = invoice.items.reduce((sum, item) => {
       const lineTotal = item.quantity * item.rate;
       const afterDiscount = lineTotal * (1 - item.discount / 100);
       return sum + afterDiscount;
     }, 0);
 
-    const tax = mockInvoice.items.reduce((sum, item) => {
+    const tax = invoice.items.reduce((sum, item) => {
       const lineTotal = item.quantity * item.rate;
       const afterDiscount = lineTotal * (1 - item.discount / 100);
       const itemTax = afterDiscount * (item.tax_rate / 100);
@@ -77,7 +65,7 @@ export async function GET(
       <html>
         <head>
           <meta charset="utf-8">
-          <title>Invoice ${mockInvoice.invoice_number}</title>
+          <title>Invoice ${invoice.invoice_number}</title>
           <style>
             * {
               margin: 0;
@@ -272,25 +260,24 @@ export async function GET(
             </div>
             <div class="invoice-info">
               <div class="invoice-title">INVOICE</div>
-              <div class="invoice-number">${mockInvoice.invoice_number}</div>
-              <div class="status-badge">${mockInvoice.status.toUpperCase()}</div>
+              <div class="invoice-number">${invoice.invoice_number}</div>
+              <div class="status-badge">${invoice.status.toUpperCase()}</div>
             </div>
           </div>
           
           <div class="billing-section">
             <div class="bill-to">
               <div class="section-title">Bill To:</div>
-              <div class="client-name">${mockInvoice.client_name}</div>
+              <div class="client-name">${invoice.client_name}</div>
               <div class="client-details">
-                ${mockInvoice.client_email}<br>
-                ${mockInvoice.client_address?.replace(/\n/g, '<br>') || ''}
+                ${invoice.client_email}<br>
+                ${invoice.client_address?.replace(/\n/g, '<br>') || ''}
               </div>
             </div>
             <div class="invoice-details">
               <div class="section-title">Invoice Details:</div>
               <div class="client-details">
-                <strong>Issue Date:</strong> ${new Date(mockInvoice.issue_date).toLocaleDateString()}<br>
-                <strong>Due Date:</strong> ${new Date(mockInvoice.due_date).toLocaleDateString()}
+                <strong>Issue Date:</strong> ${new Date(invoice.issue_date).toLocaleDateString()}
               </div>
             </div>
           </div>
@@ -306,7 +293,7 @@ export async function GET(
               </tr>
             </thead>
             <tbody>
-              ${mockInvoice.items.map(item => {
+              ${invoice.items.map(item => {
                 const lineTotal = item.quantity * item.rate;
                 const afterDiscount = lineTotal * (1 - item.discount / 100);
                 const itemTax = afterDiscount * (item.tax_rate / 100);
@@ -340,10 +327,10 @@ export async function GET(
             </div>
           </div>
           
-          ${mockInvoice.notes ? `
+          ${invoice.notes ? `
             <div class="notes-section">
               <div class="notes-title">Notes:</div>
-              <div class="notes-content">${mockInvoice.notes}</div>
+              <div class="notes-content">${invoice.notes}</div>
             </div>
           ` : ''}
           

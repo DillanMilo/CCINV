@@ -38,7 +38,6 @@ export interface Invoice {
   client_email: string;
   client_address?: string;
   issue_date: string;
-  due_date: string;
   status: 'draft' | 'sent' | 'paid';
   notes?: string;
   items: InvoiceItem[];

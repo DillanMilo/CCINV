@@ -21,6 +21,7 @@ export default function InvoiceDetailPage({
 }) {
   const { data, loading } = useAppData();
   const invoiceId = params.id;
+  const profile = data?.profile;
 
   if (loading) {
     return (
@@ -131,6 +132,15 @@ export default function InvoiceDetailPage({
             <CardTitle>Invoice Information</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 sm:space-y-3">
+            {profile?.logo_url && (
+              <div className="mb-4">
+                <img
+                  src={profile.logo_url}
+                  alt="Company Logo"
+                  className="max-w-[200px] h-auto rounded border"
+                />
+              </div>
+            )}
             <div className="flex justify-between items-start">
               <span className="text-muted-foreground">Invoice Number:</span>
               <span className="font-medium text-right break-all">
@@ -141,12 +151,6 @@ export default function InvoiceDetailPage({
               <span className="text-muted-foreground">Issue Date:</span>
               <span className="text-right">
                 {new Date(invoice.issue_date).toLocaleDateString()}
-              </span>
-            </div>
-            <div className="flex justify-between items-start">
-              <span className="text-muted-foreground">Due Date:</span>
-              <span className="text-right">
-                {new Date(invoice.due_date).toLocaleDateString()}
               </span>
             </div>
             <div className="flex justify-between items-start">
