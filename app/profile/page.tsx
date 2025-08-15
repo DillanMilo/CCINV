@@ -1,7 +1,7 @@
 // Purpose: Profile management with simple storage
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -46,6 +46,23 @@ export default function ProfilePage() {
     zip_code: profile.zip_code,
   });
 
+  // Update form data when profile changes
+  useEffect(() => {
+    setFormData({
+      company_name: profile.company_name,
+      ein: profile.ein,
+      tax_number: profile.tax_number,
+      bank_name: profile.bank_name,
+      account_number: profile.account_number,
+      routing_number: profile.routing_number,
+      address_line_1: profile.address_line_1,
+      address_line_2: profile.address_line_2,
+      city: profile.city,
+      state: profile.state,
+      zip_code: profile.zip_code,
+    });
+  }, [profile]);
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -64,6 +81,8 @@ export default function ProfilePage() {
     setIsSubmitting(true);
 
     try {
+      console.log("Updating profile with data:", formData);
+
       let uploadedLogoUrl = logoUrl || profile.logo_url;
 
       // For now, we'll just use the file URL if a new logo was selected
@@ -71,11 +90,16 @@ export default function ProfilePage() {
         uploadedLogoUrl = URL.createObjectURL(logoFile);
       }
 
-      await updateProfile({
+      const profileData = {
         ...formData,
         logo_url: uploadedLogoUrl,
-      });
+      };
 
+      console.log("Final profile data to save:", profileData);
+
+      await updateProfile(profileData);
+
+      console.log("Profile updated successfully");
       alert("Profile updated successfully!");
     } catch (error) {
       console.error("Error updating profile:", error);

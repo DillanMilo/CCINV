@@ -117,6 +117,7 @@ function setLocalData(data: AppData): void {
 // Supabase storage functions
 export async function loadData(): Promise<AppData> {
   try {
+    console.log('Loading data from Supabase...');
     // Try to load from Supabase first
     const { data: supabaseData, error } = await supabase
       .from('app_data')
@@ -130,11 +131,13 @@ export async function loadData(): Promise<AppData> {
     }
 
     if (supabaseData) {
+      console.log('Found data in Supabase:', supabaseData);
       const parsedData = JSON.parse(supabaseData.data);
       setLocalData(parsedData); // Cache locally
       return parsedData;
     }
 
+    console.log('No data found in Supabase, using local storage');
     // Fallback to local storage
     return getLocalData();
   } catch (error) {
@@ -145,6 +148,7 @@ export async function loadData(): Promise<AppData> {
 
 export async function saveData(data: AppData): Promise<void> {
   try {
+    console.log('Saving data to Supabase...', data);
     data.lastSync = new Date().toISOString();
     
     // Save to local storage first (for immediate feedback)
@@ -164,6 +168,8 @@ export async function saveData(data: AppData): Promise<void> {
     if (error) {
       console.error('Supabase save error:', error);
       // Data is still saved locally, so app continues to work
+    } else {
+      console.log('Data saved successfully to Supabase');
     }
   } catch (error) {
     console.error('Failed to save data to Supabase:', error);

@@ -117,11 +117,19 @@ export function useAppData() {
   };
 
   const updateProfile = (updates: Partial<Profile>) => {
-    if (!data) return;
+    console.log("updateProfile called with:", updates);
+    if (!data) {
+      console.log("No data available, returning early");
+      return;
+    }
+    console.log("Current profile:", data.profile);
+    const newProfile = { ...data.profile, ...updates };
+    console.log("New profile:", newProfile);
     setData({
       ...data,
-      profile: { ...data.profile, ...updates },
+      profile: newProfile,
     });
+    console.log("Profile updated in state");
   };
 
   return {
