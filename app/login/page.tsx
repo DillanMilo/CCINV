@@ -21,7 +21,8 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!supabase) return;
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    supabase.auth.getUser().then(({ data: { user }, error }) => {
+      console.log("Login page - auth check:", { user, error });
       if (user) router.replace("/");
     });
   }, [router, supabase]);
