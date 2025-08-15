@@ -1,31 +1,88 @@
 "use client";
-// Purpose: Dashboard with financial overview and quick stats
+// Purpose: Dashboard with financial overview using simple storage
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { formatCurrency } from "@/lib/money";
+import { formatCurrency } from "@/lib/storage";
 import { DollarSign, FileText, TrendingUp, TrendingDown } from "lucide-react";
-import { useRequireAuth } from "@/hooks/useRequireAuth";
+import { useAppData } from "@/hooks/use-app-data";
 
 export default function DashboardPage() {
-  useRequireAuth();
-  // Mock data - replace with actual Supabase queries
-  const stats = {
-    monthToDate: {
-      income: 4250.0,
-      expenses: 1235.19,
-      invoices: 3,
-    },
-    yearToDate: {
-      income: 48750.0,
-      expenses: 12890.45,
-      invoices: 28,
-    },
+  const { data, loading } = useAppData();
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <h3 className="text-lg font-semibold mb-2">Loading...</h3>
+          <p className="text-muted-foreground">
+            Please wait while we load your data.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const expenses = data?.expenses || [];
+  const income = data?.income || [];
+  const invoices = data?.invoices || [];
+
+  // Calculate current month totals
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+
+  const monthToDate = {
+    income: income
+      .filter((item) => {
+        const itemDate = new Date(item.date);
+        return (
+          itemDate.getMonth() === currentMonth &&
+          itemDate.getFullYear() === currentYear
+        );
+      })
+      .reduce((sum, item) => sum + item.amount, 0),
+    expenses: expenses
+      .filter((item) => {
+        const itemDate = new Date(item.date);
+        return (
+          itemDate.getMonth() === currentMonth &&
+          itemDate.getFullYear() === currentYear
+        );
+      })
+      .reduce((sum, item) => sum + item.amount, 0),
+    invoices: invoices.filter((item) => {
+      const itemDate = new Date(item.created_at);
+      return (
+        itemDate.getMonth() === currentMonth &&
+        itemDate.getFullYear() === currentYear
+      );
+    }).length,
   };
 
-  const netMTD = stats.monthToDate.income - stats.monthToDate.expenses;
-  const netYTD = stats.yearToDate.income - stats.yearToDate.expenses;
+  // Calculate year to date totals
+  const yearToDate = {
+    income: income
+      .filter((item) => {
+        const itemDate = new Date(item.date);
+        return itemDate.getFullYear() === currentYear;
+      })
+      .reduce((sum, item) => sum + item.amount, 0),
+    expenses: expenses
+      .filter((item) => {
+        const itemDate = new Date(item.date);
+        return itemDate.getFullYear() === currentYear;
+      })
+      .reduce((sum, item) => sum + item.amount, 0),
+    invoices: invoices.filter((item) => {
+      const itemDate = new Date(item.created_at);
+      return itemDate.getFullYear() === currentYear;
+    }).length,
+  };
+
+  const netMTD = monthToDate.income - monthToDate.expenses;
+  const netYTD = yearToDate.income - yearToDate.expenses;
 
   return (
     <div className="space-y-6">
@@ -47,7 +104,7 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-xl sm:text-2xl font-bold text-green-600">
-                {formatCurrency(stats.monthToDate.income)}
+                {formatCurrency(monthToDate.income)}
               </div>
             </CardContent>
           </Card>
@@ -58,7 +115,7 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-xl sm:text-2xl font-bold text-red-600">
-                {formatCurrency(stats.monthToDate.expenses)}
+                {formatCurrency(monthToDate.expenses)}
               </div>
             </CardContent>
           </Card>
@@ -84,7 +141,7 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-xl sm:text-2xl font-bold">
-                {stats.monthToDate.invoices}
+                {monthToDate.invoices}
               </div>
             </CardContent>
           </Card>
@@ -102,7 +159,7 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-xl sm:text-2xl font-bold text-green-600">
-                {formatCurrency(stats.yearToDate.income)}
+                {formatCurrency(yearToDate.income)}
               </div>
             </CardContent>
           </Card>
@@ -113,7 +170,7 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-xl sm:text-2xl font-bold text-red-600">
-                {formatCurrency(stats.yearToDate.expenses)}
+                {formatCurrency(yearToDate.expenses)}
               </div>
             </CardContent>
           </Card>
@@ -139,7 +196,7 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-xl sm:text-2xl font-bold">
-                {stats.yearToDate.invoices}
+                {yearToDate.invoices}
               </div>
             </CardContent>
           </Card>

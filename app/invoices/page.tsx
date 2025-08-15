@@ -1,4 +1,4 @@
-// Purpose: Invoice list with status filters
+// Purpose: Invoice list with simple storage
 "use client";
 
 import { useState } from "react";
@@ -13,39 +13,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { formatCurrency } from "@/lib/money";
-import { useRequireAuth } from "@/hooks/useRequireAuth";
-
-interface Invoice {
-  id: string;
-  invoice_number: string;
-  client_name: string;
-  total: number;
-  status: "draft" | "sent" | "paid";
-  issue_date: string;
-  due_date: string;
-}
-
-const mockInvoices: Invoice[] = [
-  {
-    id: "1",
-    invoice_number: "INV-2501-ABC1",
-    client_name: "Acme Corp",
-    total: 2500.0,
-    status: "paid",
-    issue_date: "2024-12-15",
-    due_date: "2025-01-14",
-  },
-  {
-    id: "2",
-    invoice_number: "INV-2501-DEF2",
-    client_name: "Tech Solutions LLC",
-    total: 1850.0,
-    status: "sent",
-    issue_date: "2024-12-20",
-    due_date: "2025-01-19",
-  },
-];
+import { formatCurrency } from "@/lib/storage";
+import { useAppData } from "@/hooks/use-app-data";
 
 const statusColors = {
   draft: "secondary",
@@ -54,12 +23,42 @@ const statusColors = {
 } as const;
 
 export default function InvoicesPage() {
-  useRequireAuth();
+  const { data, loading, deleteInvoice } = useAppData();
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
-  const filteredInvoices = mockInvoices.filter(
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <h3 className="text-lg font-semibold mb-2">Loading...</h3>
+          <p className="text-muted-foreground">
+            Please wait while we load your data.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const invoices = data?.invoices || [];
+
+  const filteredInvoices = invoices.filter(
     (invoice) => statusFilter === "all" || invoice.status === statusFilter
   );
+
+  const handleDelete = (id: string) => {
+    if (confirm("Are you sure you want to delete this invoice?")) {
+      deleteInvoice(id);
+    }
+  };
+
+  const calculateTotal = (invoice: any) => {
+    return invoice.items.reduce((sum: number, item: any) => {
+      const lineTotal = item.quantity * item.rate;
+      const afterDiscount = lineTotal * (1 - item.discount / 100);
+      const itemTax = afterDiscount * (item.tax_rate / 100);
+      return sum + afterDiscount + itemTax;
+    }, 0);
+  };
 
   return (
     <div className="space-y-6">
@@ -132,11 +131,21 @@ export default function InvoicesPage() {
                   </div>
                   <div className="text-right">
                     <div className="text-lg font-semibold">
-                      {formatCurrency(invoice.total)}
+                      {formatCurrency(calculateTotal(invoice))}
                     </div>
-                    <Button variant="outline" size="sm" asChild>
-                      <Link href={`/invoices/${invoice.id}`}>View</Link>
-                    </Button>
+                    <div className="flex gap-2 mt-2">
+                      <Button variant="outline" size="sm" asChild>
+                        <Link href={`/invoices/${invoice.id}`}>View</Link>
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDelete(invoice.id)}
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        Delete
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </CardContent>

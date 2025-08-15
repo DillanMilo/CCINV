@@ -1,9 +1,7 @@
 "use client";
-// Purpose: Invoice creation form with line items
+// Purpose: Invoice creation form with simple storage
 
 import { useState } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -17,25 +15,69 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Plus, Trash2 } from "lucide-react";
-import { invoiceSchema, type Invoice } from "@/types/schemas";
-import { formatCurrency } from "@/lib/money";
-import { generateInvoiceNumber } from "@/lib/invoice-number";
-import { useRequireAuth } from "@/hooks/useRequireAuth";
+import { formatCurrency, generateId } from "@/lib/storage";
+import { useAppData } from "@/hooks/use-app-data";
+import { useRouter } from "next/navigation";
 
 export default function NewInvoicePage() {
-  useRequireAuth();
+  const { data, addInvoice } = useAppData();
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const form = useForm<Invoice>({
-    resolver: zodResolver(invoiceSchema),
-    defaultValues: {
-      invoice_number: generateInvoiceNumber(),
-      issue_date: new Date().toISOString().split("T")[0],
-      due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split("T")[0],
-      status: "draft",
+  // Form state
+  const [formData, setFormData] = useState({
+    invoice_number: `INV-${Date.now()}`,
+    client_name: "",
+    client_email: "",
+    client_address: "",
+    issue_date: new Date().toISOString().split("T")[0],
+    due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .split("T")[0],
+    status: "draft" as const,
+    notes: "",
+    items: [
+      {
+        description: "",
+        quantity: 1,
+        rate: 0,
+        tax_rate: 0,
+        discount: 0,
+      },
+    ],
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      await addInvoice({
+        invoice_number: formData.invoice_number,
+        client_name: formData.client_name,
+        client_email: formData.client_email,
+        client_address: formData.client_address,
+        issue_date: formData.issue_date,
+        due_date: formData.due_date,
+        status: formData.status,
+        notes: formData.notes,
+        items: formData.items,
+      });
+
+      router.push("/invoices");
+    } catch (error) {
+      console.error("Error creating invoice:", error);
+      alert("Failed to create invoice. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const addItem = () => {
+    setFormData({
+      ...formData,
       items: [
+        ...formData.items,
         {
           description: "",
           quantity: 1,
@@ -44,18 +86,26 @@ export default function NewInvoicePage() {
           discount: 0,
         },
       ],
-    },
-  });
+    });
+  };
 
-  const { fields, append, remove } = useFieldArray({
-    control: form.control,
-    name: "items",
-  });
+  const removeItem = (index: number) => {
+    if (formData.items.length > 1) {
+      setFormData({
+        ...formData,
+        items: formData.items.filter((_, i) => i !== index),
+      });
+    }
+  };
 
-  const watchedItems = form.watch("items");
+  const updateItem = (index: number, field: string, value: any) => {
+    const newItems = [...formData.items];
+    newItems[index] = { ...newItems[index], [field]: value };
+    setFormData({ ...formData, items: newItems });
+  };
 
   const calculateSubtotal = () => {
-    return watchedItems.reduce((sum, item) => {
+    return formData.items.reduce((sum, item) => {
       const lineTotal = (item.quantity || 0) * (item.rate || 0);
       const afterDiscount = lineTotal * (1 - (item.discount || 0) / 100);
       return sum + afterDiscount;
@@ -63,7 +113,7 @@ export default function NewInvoicePage() {
   };
 
   const calculateTax = () => {
-    return watchedItems.reduce((sum, item) => {
+    return formData.items.reduce((sum, item) => {
       const lineTotal = (item.quantity || 0) * (item.rate || 0);
       const afterDiscount = lineTotal * (1 - (item.discount || 0) / 100);
       const tax = afterDiscount * ((item.tax_rate || 0) / 100);
@@ -75,19 +125,6 @@ export default function NewInvoicePage() {
   const tax = calculateTax();
   const total = subtotal + tax;
 
-  const onSubmit = async (data: Invoice) => {
-    setIsSubmitting(true);
-    try {
-      // TODO: Implement server action to create invoice
-      console.log("Creating invoice:", data);
-      alert("Invoice created successfully!");
-    } catch (error) {
-      console.error("Error creating invoice:", error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div>
@@ -97,7 +134,7 @@ export default function NewInvoicePage() {
         </p>
       </div>
 
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6">
         {/* Invoice Details */}
         <Card>
           <CardHeader>
@@ -109,19 +146,20 @@ export default function NewInvoicePage() {
                 <Label htmlFor="invoice_number">Invoice Number</Label>
                 <Input
                   id="invoice_number"
-                  {...form.register("invoice_number")}
+                  value={formData.invoice_number}
+                  onChange={(e) =>
+                    setFormData({ ...formData, invoice_number: e.target.value })
+                  }
+                  required
                 />
-                {form.formState.errors.invoice_number && (
-                  <p className="text-sm text-red-500 mt-1">
-                    {form.formState.errors.invoice_number.message}
-                  </p>
-                )}
               </div>
               <div>
                 <Label htmlFor="status">Status</Label>
                 <Select
-                  value={form.watch("status")}
-                  onValueChange={(value: any) => form.setValue("status", value)}
+                  value={formData.status}
+                  onValueChange={(value: any) =>
+                    setFormData({ ...formData, status: value })
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -138,7 +176,11 @@ export default function NewInvoicePage() {
                 <Input
                   id="issue_date"
                   type="date"
-                  {...form.register("issue_date")}
+                  value={formData.issue_date}
+                  onChange={(e) =>
+                    setFormData({ ...formData, issue_date: e.target.value })
+                  }
+                  required
                 />
               </div>
               <div>
@@ -146,7 +188,11 @@ export default function NewInvoicePage() {
                 <Input
                   id="due_date"
                   type="date"
-                  {...form.register("due_date")}
+                  value={formData.due_date}
+                  onChange={(e) =>
+                    setFormData({ ...formData, due_date: e.target.value })
+                  }
+                  required
                 />
               </div>
             </div>
@@ -162,32 +208,36 @@ export default function NewInvoicePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="client_name">Client Name</Label>
-                <Input id="client_name" {...form.register("client_name")} />
-                {form.formState.errors.client_name && (
-                  <p className="text-sm text-red-500 mt-1">
-                    {form.formState.errors.client_name.message}
-                  </p>
-                )}
+                <Input
+                  id="client_name"
+                  value={formData.client_name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, client_name: e.target.value })
+                  }
+                  required
+                />
               </div>
               <div>
                 <Label htmlFor="client_email">Client Email</Label>
                 <Input
                   id="client_email"
                   type="email"
-                  {...form.register("client_email")}
+                  value={formData.client_email}
+                  onChange={(e) =>
+                    setFormData({ ...formData, client_email: e.target.value })
+                  }
+                  required
                 />
-                {form.formState.errors.client_email && (
-                  <p className="text-sm text-red-500 mt-1">
-                    {form.formState.errors.client_email.message}
-                  </p>
-                )}
               </div>
             </div>
             <div>
               <Label htmlFor="client_address">Client Address</Label>
               <Textarea
                 id="client_address"
-                {...form.register("client_address")}
+                value={formData.client_address}
+                onChange={(e) =>
+                  setFormData({ ...formData, client_address: e.target.value })
+                }
               />
             </div>
           </CardContent>
@@ -200,16 +250,16 @@ export default function NewInvoicePage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {fields.map((field, index) => (
-                <div key={field.id} className="p-4 border rounded-lg space-y-4">
+              {formData.items.map((item, index) => (
+                <div key={index} className="p-4 border rounded-lg space-y-4">
                   <div className="flex justify-between items-center">
                     <h4 className="font-medium">Item {index + 1}</h4>
-                    {fields.length > 1 && (
+                    {formData.items.length > 1 && (
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
-                        onClick={() => remove(index)}
+                        onClick={() => removeItem(index)}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -218,16 +268,28 @@ export default function NewInvoicePage() {
                   <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                     <div className="md:col-span-2">
                       <Label>Description</Label>
-                      <Input {...form.register(`items.${index}.description`)} />
+                      <Input
+                        value={item.description}
+                        onChange={(e) =>
+                          updateItem(index, "description", e.target.value)
+                        }
+                        required
+                      />
                     </div>
                     <div>
                       <Label>Quantity</Label>
                       <Input
                         type="number"
                         min="1"
-                        {...form.register(`items.${index}.quantity`, {
-                          valueAsNumber: true,
-                        })}
+                        value={item.quantity}
+                        onChange={(e) =>
+                          updateItem(
+                            index,
+                            "quantity",
+                            parseInt(e.target.value) || 1
+                          )
+                        }
+                        required
                       />
                     </div>
                     <div>
@@ -236,9 +298,15 @@ export default function NewInvoicePage() {
                         type="number"
                         min="0"
                         step="0.01"
-                        {...form.register(`items.${index}.rate`, {
-                          valueAsNumber: true,
-                        })}
+                        value={item.rate}
+                        onChange={(e) =>
+                          updateItem(
+                            index,
+                            "rate",
+                            parseFloat(e.target.value) || 0
+                          )
+                        }
+                        required
                       />
                     </div>
                     <div>
@@ -248,19 +316,21 @@ export default function NewInvoicePage() {
                         min="0"
                         max="100"
                         step="0.01"
-                        {...form.register(`items.${index}.tax_rate`, {
-                          valueAsNumber: true,
-                        })}
+                        value={item.tax_rate}
+                        onChange={(e) =>
+                          updateItem(
+                            index,
+                            "tax_rate",
+                            parseFloat(e.target.value) || 0
+                          )
+                        }
                       />
                     </div>
                   </div>
                   <div className="text-right">
                     <span className="text-sm text-muted-foreground">
                       Line Total:{" "}
-                      {formatCurrency(
-                        (watchedItems[index]?.quantity || 0) *
-                          (watchedItems[index]?.rate || 0)
-                      )}
+                      {formatCurrency((item.quantity || 0) * (item.rate || 0))}
                     </span>
                   </div>
                 </div>
@@ -269,15 +339,7 @@ export default function NewInvoicePage() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() =>
-                  append({
-                    description: "",
-                    quantity: 1,
-                    rate: 0,
-                    tax_rate: 0,
-                    discount: 0,
-                  })
-                }
+                onClick={addItem}
                 className="w-full"
               >
                 <Plus className="h-4 w-4 mr-2" />
@@ -318,15 +380,22 @@ export default function NewInvoicePage() {
           <CardContent>
             <Textarea
               placeholder="Additional notes or terms..."
-              {...form.register("notes")}
+              value={formData.notes}
+              onChange={(e) =>
+                setFormData({ ...formData, notes: e.target.value })
+              }
             />
           </CardContent>
         </Card>
 
         {/* Actions */}
         <div className="flex justify-end gap-4">
-          <Button type="button" variant="outline">
-            Save as Draft
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => router.push("/invoices")}
+          >
+            Cancel
           </Button>
           <Button type="submit" disabled={isSubmitting}>
             {isSubmitting ? "Creating..." : "Create Invoice"}

@@ -1,37 +1,33 @@
-// Purpose: Root layout with navigation and Supabase context
-'use client';
+// Purpose: Root layout with navigation - no authentication required
+"use client";
 
-import './globals.css';
-import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
-import Link from 'next/link';
-import { useState } from 'react';
-import { usePathname } from 'next/navigation';
-import { Toaster } from '@/components/ui/sonner';
-import { Button } from '@/components/ui/button';
-import { X, Menu } from 'lucide-react';
+import "./globals.css";
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import Link from "next/link";
+import { useState } from "react";
+import { usePathname } from "next/navigation";
+import { Toaster } from "@/components/ui/sonner";
+import { Button } from "@/components/ui/button";
+import { X, Menu } from "lucide-react";
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ subsets: ["latin"] });
 
 const navigationItems = [
-  { name: 'Dashboard', href: '/' },
-  { name: 'Invoices', href: '/invoices' },
-  { name: 'Income', href: '/income' },
-  { name: 'Expenses', href: '/expenses' },
-  { name: 'Profile', href: '/profile' },
+  { name: "Dashboard", href: "/" },
+  { name: "Invoices", href: "/invoices" },
+  { name: "Income", href: "/income" },
+  { name: "Expenses", href: "/expenses" },
+  { name: "Profile", href: "/profile" },
 ];
 
-function RootLayoutClient({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+function RootLayoutClient({ children }: { children: React.ReactNode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
 
   const isActiveRoute = (href: string) => {
-    if (href === '/') {
-      return pathname === '/';
+    if (href === "/") {
+      return pathname === "/";
     }
     return pathname.startsWith(href);
   };
@@ -42,7 +38,10 @@ function RootLayoutClient({
         <div className="mx-auto max-w-screen-xl px-3 sm:px-4 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center gap-8">
-              <Link href="/" className="text-lg sm:text-xl font-bold text-primary">
+              <Link
+                href="/"
+                className="text-lg sm:text-xl font-bold text-primary"
+              >
                 Creative Currents
               </Link>
               <div className="hidden sm:flex gap-4 lg:gap-6">
@@ -52,8 +51,8 @@ function RootLayoutClient({
                     href={item.href}
                     className={`text-xs sm:text-sm font-medium transition-colors ${
                       isActiveRoute(item.href)
-                        ? 'text-primary'
-                        : 'text-muted-foreground hover:text-primary'
+                        ? "text-primary"
+                        : "text-muted-foreground hover:text-primary"
                     }`}
                   >
                     {item.name}
@@ -77,7 +76,7 @@ function RootLayoutClient({
             </div>
           </div>
         </div>
-        
+
         {/* Mobile menu */}
         {isMobileMenuOpen && (
           <div className="sm:hidden border-t bg-white">
@@ -89,8 +88,8 @@ function RootLayoutClient({
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                     isActiveRoute(item.href)
-                      ? 'bg-primary/10 text-primary'
-                      : 'text-muted-foreground hover:text-primary hover:bg-muted/50'
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:text-primary hover:bg-muted/50"
                   }`}
                 >
                   {item.name}
