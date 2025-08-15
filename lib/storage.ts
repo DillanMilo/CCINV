@@ -17,6 +17,7 @@ export interface Expense {
   description: string;
   category: string;
   merchant?: string;
+  tax_deductible: boolean;
   date: string;
   created_at: string;
 }
@@ -93,7 +94,19 @@ const defaultData: AppData = {
 function getLocalData(): AppData {
   if (typeof window === 'undefined') return defaultData;
   const stored = localStorage.getItem(STORAGE_KEY);
-  return stored ? { ...defaultData, ...JSON.parse(stored) } : defaultData;
+  if (!stored) return defaultData;
+  
+  const parsedData = JSON.parse(stored);
+  
+  // Migrate existing expenses to include tax_deductible field
+  if (parsedData.expenses) {
+    parsedData.expenses = parsedData.expenses.map((expense: any) => ({
+      ...expense,
+      tax_deductible: expense.tax_deductible ?? true, // Default to true for existing expenses
+    }));
+  }
+  
+  return { ...defaultData, ...parsedData };
 }
 
 function setLocalData(data: AppData): void {

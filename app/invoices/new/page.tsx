@@ -51,7 +51,35 @@ export default function NewInvoicePage() {
     e.preventDefault();
     setIsSubmitting(true);
 
+    // Validate required fields
+    if (
+      !formData.client_name ||
+      !formData.client_email ||
+      !formData.invoice_number
+    ) {
+      alert(
+        "Please fill in all required fields (Client Name, Client Email, Invoice Number)"
+      );
+      setIsSubmitting(false);
+      return;
+    }
+
+    // Validate items
+    const hasValidItems = formData.items.some(
+      (item) => item.description && item.quantity > 0 && item.rate > 0
+    );
+
+    if (!hasValidItems) {
+      alert(
+        "Please add at least one item with description, quantity, and rate"
+      );
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
+      console.log("Creating invoice with data:", formData);
+
       await addInvoice({
         invoice_number: formData.invoice_number,
         client_name: formData.client_name,
@@ -64,6 +92,7 @@ export default function NewInvoicePage() {
         items: formData.items,
       });
 
+      console.log("Invoice created successfully");
       router.push("/invoices");
     } catch (error) {
       console.error("Error creating invoice:", error);
@@ -134,7 +163,7 @@ export default function NewInvoicePage() {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6" noValidate>
         {/* Invoice Details */}
         <Card>
           <CardHeader>

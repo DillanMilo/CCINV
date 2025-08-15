@@ -30,6 +30,7 @@ import { Plus, MoreVertical, Edit, Trash2 } from "lucide-react";
 import { Download, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import { formatCurrency } from "@/lib/storage";
 import { useAppData } from "@/hooks/use-app-data";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const expenseCategories = [
   "Software",
@@ -71,6 +72,7 @@ export default function ExpensesPage() {
     description: "",
     category: "",
     merchant: "",
+    tax_deductible: true,
     date: new Date().toISOString().split("T")[0],
   });
 
@@ -98,6 +100,7 @@ export default function ExpensesPage() {
         description: formData.description,
         category: formData.category,
         merchant: formData.merchant || "",
+        tax_deductible: formData.tax_deductible,
         date: formData.date,
       });
     } else {
@@ -106,6 +109,7 @@ export default function ExpensesPage() {
         description: formData.description,
         category: formData.category,
         merchant: formData.merchant || "",
+        tax_deductible: formData.tax_deductible,
         date: formData.date,
       });
     }
@@ -120,6 +124,7 @@ export default function ExpensesPage() {
       description: "",
       category: "",
       merchant: "",
+      tax_deductible: true,
       date: new Date().toISOString().split("T")[0],
     });
     setEditingExpense(null);
@@ -132,6 +137,7 @@ export default function ExpensesPage() {
       description: expense.description,
       category: expense.category,
       merchant: expense.merchant || "",
+      tax_deductible: expense.tax_deductible ?? true,
       date: expense.date,
     });
     setIsDialogOpen(true);
@@ -179,13 +185,21 @@ export default function ExpensesPage() {
 
   const handleExport = () => {
     const csvContent = [
-      ["Date", "Description", "Category", "Merchant", "Amount"],
+      [
+        "Date",
+        "Description",
+        "Category",
+        "Merchant",
+        "Amount",
+        "Tax Deductible",
+      ],
       ...expenses.map((expense) => [
         expense.date,
         expense.description,
         expense.category,
         expense.merchant || "",
         expense.amount.toString(),
+        expense.tax_deductible ? "Yes" : "No",
       ]),
     ]
       .map((row) => row.join(","))
@@ -289,6 +303,19 @@ export default function ExpensesPage() {
                   }
                   required
                 />
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="tax_deductible"
+                  checked={formData.tax_deductible}
+                  onCheckedChange={(checked) =>
+                    setFormData({
+                      ...formData,
+                      tax_deductible: checked as boolean,
+                    })
+                  }
+                />
+                <Label htmlFor="tax_deductible">Tax Deductible</Label>
               </div>
               <div className="flex justify-end gap-2">
                 <Button
@@ -403,6 +430,11 @@ export default function ExpensesPage() {
                       )}
                       <span className="break-words">
                         Date: {new Date(expense.date).toLocaleDateString()}
+                      </span>
+                      <span className="break-words">
+                        {expense.tax_deductible
+                          ? "✅ Tax Deductible"
+                          : "❌ Not Tax Deductible"}
                       </span>
                     </div>
                   </div>
