@@ -4,7 +4,14 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Download, Send, Edit } from "lucide-react";
+import {
+  ArrowLeft,
+  Download,
+  Send,
+  Edit,
+  CheckCircle,
+  Clock,
+} from "lucide-react";
 import { formatCurrency } from "@/lib/storage";
 import { useAppData } from "@/hooks/use-app-data";
 
@@ -19,7 +26,7 @@ export default function InvoiceDetailPage({
 }: {
   params: { id: string };
 }) {
-  const { data, loading } = useAppData();
+  const { data, loading, updateInvoice } = useAppData();
   const invoiceId = params.id;
   const profile = data?.profile;
 
@@ -73,6 +80,15 @@ export default function InvoiceDetailPage({
   const tax = calculateTax();
   const total = subtotal + tax;
 
+  const handleStatusChange = async (newStatus: "draft" | "sent" | "paid") => {
+    try {
+      await updateInvoice(invoice.id, { status: newStatus });
+    } catch (error) {
+      console.error("Error updating invoice status:", error);
+      alert("Failed to update invoice status. Please try again.");
+    }
+  };
+
   return (
     <div className="w-full max-w-4xl mx-auto space-y-4 sm:space-y-6">
       <div className="flex items-center justify-between">
@@ -117,7 +133,41 @@ export default function InvoiceDetailPage({
             </a>
           </Button>
           {invoice.status !== "paid" && (
-            <Button>
+            <Button
+              onClick={() => {
+                const pdfUrl = `/api/invoices/${invoiceId}/pdf`;
+                const subject = encodeURIComponent(
+                  `Invoice ${invoice.invoice_number} from ${
+                    profile?.company_name || "Creative Currents"
+                  }`
+                );
+                const body = encodeURIComponent(
+                  `Dear ${
+                    invoice.client_name
+                  },\n\nPlease find attached invoice ${
+                    invoice.invoice_number
+                  } for ${formatCurrency(
+                    total
+                  )}.\n\nThank you for your business!\n\nBest regards,\n${
+                    profile?.company_name || "Creative Currents"
+                  }`
+                );
+
+                // Create mailto link with PDF attachment
+                const mailtoLink = `mailto:${invoice.client_email}?subject=${subject}&body=${body}`;
+
+                // Open email client
+                window.open(mailtoLink, "_blank");
+
+                // Also trigger PDF download
+                const link = document.createElement("a");
+                link.href = pdfUrl;
+                link.download = `invoice-${invoice.invoice_number}.pdf`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+              }}
+            >
               <Send className="h-4 w-4 mr-2" />
               <span className="hidden sm:inline">Send</span>
             </Button>
@@ -183,6 +233,44 @@ export default function InvoiceDetailPage({
           </CardContent>
         </Card>
       </div>
+
+      {/* Quick Status Actions */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Quick Actions</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant={invoice.status === "draft" ? "default" : "outline"}
+              size="sm"
+              onClick={() => handleStatusChange("draft")}
+              disabled={invoice.status === "draft"}
+            >
+              <Clock className="h-4 w-4 mr-2" />
+              Mark as Draft
+            </Button>
+            <Button
+              variant={invoice.status === "sent" ? "default" : "outline"}
+              size="sm"
+              onClick={() => handleStatusChange("sent")}
+              disabled={invoice.status === "sent"}
+            >
+              <Send className="h-4 w-4 mr-2" />
+              Mark as Sent
+            </Button>
+            <Button
+              variant={invoice.status === "paid" ? "default" : "outline"}
+              size="sm"
+              onClick={() => handleStatusChange("paid")}
+              disabled={invoice.status === "paid"}
+            >
+              <CheckCircle className="h-4 w-4 mr-2" />
+              Mark as Paid
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Line Items */}
       <Card>

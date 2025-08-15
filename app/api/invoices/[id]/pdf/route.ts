@@ -44,13 +44,13 @@ export async function GET(
       );
     }
 
-    const subtotal = invoice.items.reduce((sum, item) => {
+    const subtotal = invoice.items.reduce((sum: number, item: any) => {
       const lineTotal = item.quantity * item.rate;
       const afterDiscount = lineTotal * (1 - item.discount / 100);
       return sum + afterDiscount;
     }, 0);
 
-    const tax = invoice.items.reduce((sum, item) => {
+    const tax = invoice.items.reduce((sum: number, item: any) => {
       const lineTotal = item.quantity * item.rate;
       const afterDiscount = lineTotal * (1 - item.discount / 100);
       const itemTax = afterDiscount * (item.tax_rate / 100);
@@ -293,7 +293,7 @@ export async function GET(
               </tr>
             </thead>
             <tbody>
-              ${invoice.items.map(item => {
+              ${invoice.items.map((item: any) => {
                 const lineTotal = item.quantity * item.rate;
                 const afterDiscount = lineTotal * (1 - item.discount / 100);
                 const itemTax = afterDiscount * (item.tax_rate / 100);

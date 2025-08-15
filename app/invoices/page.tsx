@@ -126,7 +126,8 @@ export default function InvoicesPage() {
                       {invoice.client_name}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      Due: {new Date(invoice.due_date).toLocaleDateString()}
+                      Issue Date:{" "}
+                      {new Date(invoice.issue_date).toLocaleDateString()}
                     </p>
                   </div>
                   <div className="text-right">
@@ -136,6 +137,9 @@ export default function InvoicesPage() {
                     <div className="flex gap-2 mt-2">
                       <Button variant="outline" size="sm" asChild>
                         <Link href={`/invoices/${invoice.id}`}>View</Link>
+                      </Button>
+                      <Button variant="outline" size="sm" asChild>
+                        <Link href={`/invoices/${invoice.id}/edit`}>Edit</Link>
                       </Button>
                       <Button
                         variant="outline"
