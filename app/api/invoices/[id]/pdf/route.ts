@@ -255,7 +255,10 @@ export async function GET(
               <div class="company-info">
                 <div style="font-weight: 600; font-size: 16px; color: #1f2937;">${profile.company_name}</div>
                 <div>Professional Services</div>
-                <div style="font-size: 11px; margin-top: 4px;">EIN: ${profile.ein || ''}</div>
+                ${profile.ein ? `<div style="font-size: 11px; margin-top: 4px;">EIN: ${profile.ein}</div>` : ''}
+                ${profile.bank_name ? `<div style="font-size: 11px; margin-top: 2px;">Bank: ${profile.bank_name}</div>` : ''}
+                ${profile.account_number ? `<div style="font-size: 11px; margin-top: 2px;">Account: ****${profile.account_number.slice(-4)}</div>` : ''}
+                ${profile.routing_number ? `<div style="font-size: 11px; margin-top: 2px;">Routing: ${profile.routing_number}</div>` : ''}
               </div>
             </div>
             <div class="invoice-info">
@@ -331,6 +334,15 @@ export async function GET(
             <div class="notes-section">
               <div class="notes-title">Notes:</div>
               <div class="notes-content">${invoice.notes}</div>
+            </div>
+          ` : ''}
+          
+          ${(profile.bank_name || profile.account_number || profile.routing_number) ? `
+            <div class="payment-section" style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #e5e7eb;">
+              <div style="font-weight: 600; margin-bottom: 0.5rem; color: #1f2937;">Payment Information:</div>
+              ${profile.bank_name ? `<div style="font-size: 12px; margin-bottom: 2px;">Bank: ${profile.bank_name}</div>` : ''}
+              ${profile.account_number ? `<div style="font-size: 12px; margin-bottom: 2px;">Account: ****${profile.account_number.slice(-4)}</div>` : ''}
+              ${profile.routing_number ? `<div style="font-size: 12px; margin-bottom: 2px;">Routing: ${profile.routing_number}</div>` : ''}
             </div>
           ` : ''}
           

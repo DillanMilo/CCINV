@@ -211,6 +211,32 @@ export default function InvoiceDetailPage({
                 </Badge>
               </div>
             </div>
+            {profile?.ein && (
+              <div className="flex justify-between items-start">
+                <span className="text-muted-foreground">EIN:</span>
+                <span className="text-right">{profile.ein}</span>
+              </div>
+            )}
+            {profile?.bank_name && (
+              <div className="flex justify-between items-start">
+                <span className="text-muted-foreground">Bank:</span>
+                <span className="text-right">{profile.bank_name}</span>
+              </div>
+            )}
+            {profile?.account_number && (
+              <div className="flex justify-between items-start">
+                <span className="text-muted-foreground">Account:</span>
+                <span className="text-right">
+                  ****{profile.account_number.slice(-4)}
+                </span>
+              </div>
+            )}
+            {profile?.routing_number && (
+              <div className="flex justify-between items-start">
+                <span className="text-muted-foreground">Routing:</span>
+                <span className="text-right">{profile.routing_number}</span>
+              </div>
+            )}
           </CardContent>
         </Card>
 
