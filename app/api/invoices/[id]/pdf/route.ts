@@ -1,6 +1,6 @@
 // Purpose: Generate PDF for invoice with consistent mobile/desktop layout
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase-server';
+import { supabase } from '@/lib/supabase-client';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,7 +13,7 @@ export async function GET(
     
     // TODO: Replace with actual Supabase query when invoices table exists
     // Fetch invoice and profile from Supabase
-    const supabase = createClient();
+
     // Fetch invoice (replace with real query when available)
     const mockInvoice = {
       id: '1',

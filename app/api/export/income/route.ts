@@ -1,6 +1,6 @@
 // Purpose: CSV export endpoint for income records
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase-server';
+import { supabase } from '@/lib/supabase-client';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const supabase = createClient();
+
     
     // TODO: Replace with actual Supabase query when income table exists
     const mockData = [

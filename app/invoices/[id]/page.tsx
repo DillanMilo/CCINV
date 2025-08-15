@@ -5,55 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Download, Send, Edit } from "lucide-react";
-import { formatCurrency } from "@/lib/money";
-import { useRequireAuth } from "@/hooks/useRequireAuth";
-
-interface InvoiceDetail {
-  id: string;
-  invoice_number: string;
-  client_name: string;
-  client_email: string;
-  client_address?: string;
-  issue_date: string;
-  due_date: string;
-  status: "draft" | "sent" | "paid";
-  notes?: string;
-  items: Array<{
-    description: string;
-    quantity: number;
-    rate: number;
-    tax_rate: number;
-    discount: number;
-  }>;
-}
-
-const mockInvoice: InvoiceDetail = {
-  id: "1",
-  invoice_number: "INV-2501-ABC1",
-  client_name: "Acme Corp",
-  client_email: "billing@acmecorp.com",
-  client_address: "123 Business St\nSuite 100\nNew York, NY 10001",
-  issue_date: "2024-12-15",
-  due_date: "2025-01-14",
-  status: "paid",
-  notes: "Thank you for your business!",
-  items: [
-    {
-      description: "Website Development",
-      quantity: 1,
-      rate: 2000.0,
-      tax_rate: 8.25,
-      discount: 0,
-    },
-    {
-      description: "Logo Design",
-      quantity: 1,
-      rate: 500.0,
-      tax_rate: 8.25,
-      discount: 0,
-    },
-  ],
-};
+import { formatCurrency } from "@/lib/storage";
+import { useAppData } from "@/hooks/use-app-data";
 
 const statusColors = {
   draft: "secondary",
@@ -66,11 +19,37 @@ export default function InvoiceDetailPage({
 }: {
   params: { id: string };
 }) {
-  useRequireAuth();
+  const { data, loading } = useAppData();
   const invoiceId = params.id;
 
-  // TODO: Replace with actual Supabase query
-  const invoice = mockInvoice;
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <h3 className="text-lg font-semibold mb-2">Loading...</h3>
+          <p className="text-muted-foreground">
+            Please wait while we load your data.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const invoices = data?.invoices || [];
+  const invoice = invoices.find((inv) => inv.id === invoiceId);
+
+  if (!invoice) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <h3 className="text-lg font-semibold mb-2">Invoice not found</h3>
+          <p className="text-muted-foreground">
+            The invoice you're looking for doesn't exist.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const calculateSubtotal = () => {
     return invoice.items.reduce((sum, item) => {
