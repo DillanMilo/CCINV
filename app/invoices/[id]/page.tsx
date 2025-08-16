@@ -11,6 +11,7 @@ import {
   Edit,
   CheckCircle,
   Clock,
+  Eye,
 } from "lucide-react";
 import { formatCurrency } from "@/lib/storage";
 import { useAppData } from "@/hooks/use-app-data";
@@ -121,16 +122,29 @@ export default function InvoiceDetailPage({
               <span className="hidden sm:inline">Edit</span>
             </Link>
           </Button>
-          <Button variant="outline">
+          <Button variant="outline" asChild>
             <a
               href={`/api/invoices/${invoiceId}/pdf`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center"
             >
-              <Download className="h-4 w-4 mr-2" />
+              <Eye className="h-4 w-4 mr-2" />
               <span className="hidden sm:inline">View PDF</span>
             </a>
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => {
+              const link = document.createElement("a");
+              link.href = `/api/invoices/${invoiceId}/pdf`;
+              link.download = `invoice-${invoice.invoice_number}.pdf`;
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+            }}
+          >
+            <Download className="h-4 w-4 mr-2" />
+            <span className="hidden sm:inline">Download PDF</span>
           </Button>
           {invoice.status !== "paid" && (
             <Button
@@ -153,19 +167,25 @@ export default function InvoiceDetailPage({
                   }`
                 );
 
-                // Create mailto link with PDF attachment
+                // Create mailto link
                 const mailtoLink = `mailto:${invoice.client_email}?subject=${subject}&body=${body}`;
 
-                // Open email client
-                window.open(mailtoLink, "_blank");
+                // Show instructions to user
+                const instructions = `📧 Email client will open with pre-filled details.\n📎 PDF will download automatically.\n\nTo attach the PDF:\n1. Look for the downloaded file: "invoice-${invoice.invoice_number}.pdf"\n2. Drag & drop it into your email or use the attachment button\n3. Send the email`;
 
-                // Also trigger PDF download
+                // Download PDF first
                 const link = document.createElement("a");
                 link.href = pdfUrl;
                 link.download = `invoice-${invoice.invoice_number}.pdf`;
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
+
+                // Show instructions and open email
+                setTimeout(() => {
+                  alert(instructions);
+                  window.open(mailtoLink, "_blank");
+                }, 500);
               }}
             >
               <Send className="h-4 w-4 mr-2" />
