@@ -46,9 +46,7 @@ export interface Invoice {
 
 export interface InvoiceItem {
   description: string;
-  quantity: number;
   rate: number;
-  tax_rate: number;
   discount: number;
 }
 

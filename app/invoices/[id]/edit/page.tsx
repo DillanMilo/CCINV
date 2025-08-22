@@ -42,9 +42,7 @@ export default function EditInvoicePage({
     items: [
       {
         description: "",
-        quantity: 1,
         rate: 0,
-        tax_rate: 0,
         discount: 0,
       },
     ],
@@ -67,9 +65,7 @@ export default function EditInvoicePage({
             : [
                 {
                   description: "",
-                  quantity: 1,
                   rate: 0,
-                  tax_rate: 0,
                   discount: 0,
                 },
               ],
@@ -122,13 +118,11 @@ export default function EditInvoicePage({
 
     // Validate items
     const hasValidItems = formData.items.some(
-      (item) => item.description && item.quantity > 0 && item.rate > 0
+      (item) => item.description && item.rate > 0
     );
 
     if (!hasValidItems) {
-      alert(
-        "Please add at least one item with description, quantity, and rate"
-      );
+      alert("Please add at least one item with description and rate");
       setIsSubmitting(false);
       return;
     }
@@ -164,9 +158,7 @@ export default function EditInvoicePage({
         ...formData.items,
         {
           description: "",
-          quantity: 1,
           rate: 0,
-          tax_rate: 0,
           discount: 0,
         },
       ],
@@ -190,24 +182,14 @@ export default function EditInvoicePage({
 
   const calculateSubtotal = () => {
     return formData.items.reduce((sum, item) => {
-      const lineTotal = (item.quantity || 0) * (item.rate || 0);
+      const lineTotal = item.rate || 0;
       const afterDiscount = lineTotal * (1 - (item.discount || 0) / 100);
       return sum + afterDiscount;
     }, 0);
   };
 
-  const calculateTax = () => {
-    return formData.items.reduce((sum, item) => {
-      const lineTotal = (item.quantity || 0) * (item.rate || 0);
-      const afterDiscount = lineTotal * (1 - (item.discount || 0) / 100);
-      const tax = afterDiscount * ((item.tax_rate || 0) / 100);
-      return sum + tax;
-    }, 0);
-  };
-
   const subtotal = calculateSubtotal();
-  const tax = calculateTax();
-  const total = subtotal + tax;
+  const total = subtotal;
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -318,7 +300,7 @@ export default function EditInvoicePage({
         {/* Line Items */}
         <Card>
           <CardHeader>
-            <CardTitle>Items</CardTitle>
+            <CardTitle>Description</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -337,29 +319,13 @@ export default function EditInvoicePage({
                       </Button>
                     )}
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                    <div className="md:col-span-2">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
                       <Label>Description</Label>
                       <Input
                         value={item.description}
                         onChange={(e) =>
                           updateItem(index, "description", e.target.value)
-                        }
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label>Quantity</Label>
-                      <Input
-                        type="number"
-                        min="1"
-                        value={item.quantity}
-                        onChange={(e) =>
-                          updateItem(
-                            index,
-                            "quantity",
-                            parseInt(e.target.value) || 1
-                          )
                         }
                         required
                       />
@@ -382,17 +348,17 @@ export default function EditInvoicePage({
                       />
                     </div>
                     <div>
-                      <Label>Tax %</Label>
+                      <Label>Discount %</Label>
                       <Input
                         type="number"
                         min="0"
                         max="100"
                         step="0.01"
-                        value={item.tax_rate}
+                        value={item.discount}
                         onChange={(e) =>
                           updateItem(
                             index,
-                            "tax_rate",
+                            "discount",
                             parseFloat(e.target.value) || 0
                           )
                         }
@@ -401,8 +367,7 @@ export default function EditInvoicePage({
                   </div>
                   <div className="text-right">
                     <span className="text-sm text-muted-foreground">
-                      Line Total:{" "}
-                      {formatCurrency((item.quantity || 0) * (item.rate || 0))}
+                      Line Total: {formatCurrency(item.rate || 0)}
                     </span>
                   </div>
                 </div>
@@ -432,10 +397,7 @@ export default function EditInvoicePage({
                 <span>Subtotal:</span>
                 <span>{formatCurrency(subtotal)}</span>
               </div>
-              <div className="flex justify-between">
-                <span>Tax:</span>
-                <span>{formatCurrency(tax)}</span>
-              </div>
+
               <div className="flex justify-between font-bold text-lg border-t pt-2">
                 <span>Total:</span>
                 <span>{formatCurrency(total)}</span>

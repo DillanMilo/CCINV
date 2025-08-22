@@ -45,19 +45,12 @@ export async function GET(
     }
 
     const subtotal = invoice.items.reduce((sum: number, item: any) => {
-      const lineTotal = item.quantity * item.rate;
+      const lineTotal = item.rate;
       const afterDiscount = lineTotal * (1 - item.discount / 100);
       return sum + afterDiscount;
     }, 0);
 
-    const tax = invoice.items.reduce((sum: number, item: any) => {
-      const lineTotal = item.quantity * item.rate;
-      const afterDiscount = lineTotal * (1 - item.discount / 100);
-      const itemTax = afterDiscount * (item.tax_rate / 100);
-      return sum + itemTax;
-    }, 0);
-
-    const total = subtotal + tax;
+    const total = subtotal;
 
     // Generate HTML for PDF with fixed layout
     const html = `
@@ -289,25 +282,20 @@ export async function GET(
             <thead>
               <tr>
                 <th>Description</th>
-                <th class="text-right">Qty</th>
                 <th class="text-right">Rate</th>
-                <th class="text-right">Tax</th>
                 <th class="text-right">Amount</th>
               </tr>
             </thead>
             <tbody>
               ${invoice.items.map((item: any) => {
-                const lineTotal = item.quantity * item.rate;
+                const lineTotal = item.rate;
                 const afterDiscount = lineTotal * (1 - item.discount / 100);
-                const itemTax = afterDiscount * (item.tax_rate / 100);
-                const itemTotal = afterDiscount + itemTax;
+                const itemTotal = afterDiscount;
                 
                 return `
                   <tr>
                     <td>${item.description}</td>
-                    <td class="text-right">${item.quantity}</td>
                     <td class="text-right">$${item.rate.toFixed(2)}</td>
-                    <td class="text-right">${item.tax_rate}%</td>
                     <td class="text-right">$${itemTotal.toFixed(2)}</td>
                   </tr>
                 `;
@@ -319,10 +307,6 @@ export async function GET(
             <div class="totals-row">
               <span>Subtotal:</span>
               <span>$${subtotal.toFixed(2)}</span>
-            </div>
-            <div class="totals-row">
-              <span>Tax:</span>
-              <span>$${tax.toFixed(2)}</span>
             </div>
             <div class="totals-row total">
               <span>Total:</span>

@@ -62,24 +62,14 @@ export default function InvoiceDetailPage({
 
   const calculateSubtotal = () => {
     return invoice.items.reduce((sum, item) => {
-      const lineTotal = item.quantity * item.rate;
+      const lineTotal = item.rate;
       const afterDiscount = lineTotal * (1 - item.discount / 100);
       return sum + afterDiscount;
     }, 0);
   };
 
-  const calculateTax = () => {
-    return invoice.items.reduce((sum, item) => {
-      const lineTotal = item.quantity * item.rate;
-      const afterDiscount = lineTotal * (1 - item.discount / 100);
-      const tax = afterDiscount * (item.tax_rate / 100);
-      return sum + tax;
-    }, 0);
-  };
-
   const subtotal = calculateSubtotal();
-  const tax = calculateTax();
-  const total = subtotal + tax;
+  const total = subtotal;
 
   const handleStatusChange = async (newStatus: "draft" | "sent" | "paid") => {
     try {
@@ -319,15 +309,14 @@ export default function InvoiceDetailPage({
       {/* Line Items */}
       <Card>
         <CardHeader>
-          <CardTitle>Items</CardTitle>
+          <CardTitle>Description</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             {invoice.items.map((item, index) => {
-              const lineTotal = item.quantity * item.rate;
+              const lineTotal = item.rate;
               const afterDiscount = lineTotal * (1 - item.discount / 100);
-              const itemTax = afterDiscount * (item.tax_rate / 100);
-              const itemTotal = afterDiscount + itemTax;
+              const itemTotal = afterDiscount;
 
               return (
                 <div
@@ -338,9 +327,8 @@ export default function InvoiceDetailPage({
                     <div className="flex-1 min-w-0">
                       <h4 className="font-medium">{item.description}</h4>
                       <div className="text-xs sm:text-sm text-muted-foreground break-words">
-                        {item.quantity} × {formatCurrency(item.rate)}
+                        {formatCurrency(item.rate)}
                         {item.discount > 0 && ` (${item.discount}% discount)`}
-                        {item.tax_rate > 0 && ` + ${item.tax_rate}% tax`}
                       </div>
                     </div>
                     <div className="text-right sm:text-right flex-shrink-0">
@@ -367,10 +355,7 @@ export default function InvoiceDetailPage({
               <span>Subtotal:</span>
               <span className="font-medium">{formatCurrency(subtotal)}</span>
             </div>
-            <div className="flex justify-between items-center">
-              <span>Tax:</span>
-              <span className="font-medium">{formatCurrency(tax)}</span>
-            </div>
+
             <div className="flex justify-between items-center font-bold text-lg sm:text-xl border-t pt-2 mt-3">
               <span>Total:</span>
               <span>{formatCurrency(total)}</span>

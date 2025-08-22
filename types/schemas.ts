@@ -33,9 +33,7 @@ export const expenseSchema = z.object({
 
 export const invoiceItemSchema = z.object({
   description: z.string().min(1, 'Description is required'),
-  quantity: z.number().min(1, 'Quantity must be at least 1'),
   rate: z.number().positive('Rate must be positive'),
-  tax_rate: z.number().min(0).max(100),
   discount: z.number().min(0).max(100),
 });
 

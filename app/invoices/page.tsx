@@ -53,10 +53,9 @@ export default function InvoicesPage() {
 
   const calculateTotal = (invoice: any) => {
     return invoice.items.reduce((sum: number, item: any) => {
-      const lineTotal = item.quantity * item.rate;
+      const lineTotal = item.rate;
       const afterDiscount = lineTotal * (1 - item.discount / 100);
-      const itemTax = afterDiscount * (item.tax_rate / 100);
-      return sum + afterDiscount + itemTax;
+      return sum + afterDiscount;
     }, 0);
   };
 
