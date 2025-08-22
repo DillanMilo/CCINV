@@ -257,7 +257,7 @@ export async function GET(
                 <div>Professional Services</div>
                 ${profile.ein ? `<div style="font-size: 11px; margin-top: 4px;">EIN: ${profile.ein}</div>` : ''}
                 ${profile.bank_name ? `<div style="font-size: 11px; margin-top: 2px;">Bank: ${profile.bank_name}</div>` : ''}
-                ${profile.account_number ? `<div style="font-size: 11px; margin-top: 2px;">Account: ****${profile.account_number.slice(-4)}</div>` : ''}
+                ${profile.account_number ? `<div style="font-size: 11px; margin-top: 2px;">Account: ${profile.account_number}</div>` : ''}
                 ${profile.routing_number ? `<div style="font-size: 11px; margin-top: 2px;">Routing: ${profile.routing_number}</div>` : ''}
               </div>
             </div>
@@ -341,7 +341,7 @@ export async function GET(
             <div class="payment-section" style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #e5e7eb;">
               <div style="font-weight: 600; margin-bottom: 0.5rem; color: #1f2937;">Payment Information:</div>
               ${profile.bank_name ? `<div style="font-size: 12px; margin-bottom: 2px;">Bank: ${profile.bank_name}</div>` : ''}
-              ${profile.account_number ? `<div style="font-size: 12px; margin-bottom: 2px;">Account: ****${profile.account_number.slice(-4)}</div>` : ''}
+              ${profile.account_number ? `<div style="font-size: 12px; margin-bottom: 2px;">Account: ${profile.account_number}</div>` : ''}
               ${profile.routing_number ? `<div style="font-size: 12px; margin-bottom: 2px;">Routing: ${profile.routing_number}</div>` : ''}
             </div>
           ` : ''}

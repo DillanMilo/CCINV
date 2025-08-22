@@ -199,7 +199,7 @@ export default function ProfilePage() {
                 </Label>
                 <Input
                   id="account_number"
-                  type="password"
+                  type="text"
                   value={formData.account_number}
                   onChange={(e) =>
                     setFormData({ ...formData, account_number: e.target.value })

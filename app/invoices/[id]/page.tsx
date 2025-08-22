@@ -246,9 +246,7 @@ export default function InvoiceDetailPage({
             {profile?.account_number && (
               <div className="flex justify-between items-start">
                 <span className="text-muted-foreground">Account:</span>
-                <span className="text-right">
-                  ****{profile.account_number.slice(-4)}
-                </span>
+                <span className="text-right">{profile.account_number}</span>
               </div>
             )}
             {profile?.routing_number && (
