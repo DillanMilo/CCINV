@@ -18,6 +18,7 @@ const navigationItems = [
   { name: "Invoices", href: "/invoices" },
   { name: "Income", href: "/income" },
   { name: "Expenses", href: "/expenses" },
+  { name: "Fixed Expenses", href: "/fixed-expenses" },
   { name: "Profile", href: "/profile" },
 ];
 

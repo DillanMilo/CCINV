@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/select";
 import { Plus, MoreVertical, Edit, Trash2 } from "lucide-react";
 import { Download, ChevronLeft, ChevronRight } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import { formatCurrency } from "@/lib/storage";
 import { useAppData } from "@/hooks/use-app-data";
 
@@ -45,6 +46,7 @@ export default function IncomePage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingIncome, setEditingIncome] = useState<any>(null);
   const [selectedMonth, setSelectedMonth] = useState(new Date());
+  const [showAllHistory, setShowAllHistory] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -67,7 +69,19 @@ export default function IncomePage() {
     );
   }
 
-  const income = data?.income || [];
+  const allIncome = data?.income || [];
+
+  // Filter income based on showAllHistory toggle
+  const income = showAllHistory
+    ? allIncome
+    : allIncome.filter((incomeRecord) => {
+        const incomeDate = new Date(incomeRecord.date);
+        const currentDate = new Date();
+        return (
+          incomeDate.getMonth() === currentDate.getMonth() &&
+          incomeDate.getFullYear() === currentDate.getFullYear()
+        );
+      });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -119,7 +133,7 @@ export default function IncomePage() {
     }
   };
 
-  const totalIncome = income.reduce(
+  const totalIncome = allIncome.reduce(
     (sum, incomeRecord) => sum + incomeRecord.amount,
     0
   );
@@ -129,7 +143,7 @@ export default function IncomePage() {
     const monthStart = new Date(month.getFullYear(), month.getMonth(), 1);
     const monthEnd = new Date(month.getFullYear(), month.getMonth() + 1, 0);
 
-    return income.filter((incomeRecord) => {
+    return allIncome.filter((incomeRecord) => {
       const incomeDate = new Date(incomeRecord.date);
       return incomeDate >= monthStart && incomeDate <= monthEnd;
     });
@@ -156,7 +170,7 @@ export default function IncomePage() {
   const handleExport = () => {
     const csvContent = [
       ["Date", "Description", "Category", "Amount"],
-      ...income.map((incomeRecord) => [
+      ...allIncome.map((incomeRecord) => [
         incomeRecord.date,
         incomeRecord.description,
         incomeRecord.category,
@@ -185,6 +199,16 @@ export default function IncomePage() {
           <p className="text-muted-foreground">
             Track your earnings and revenue
           </p>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Label htmlFor="history-toggle" className="text-sm font-medium">
+            Show All History
+          </Label>
+          <Switch
+            id="history-toggle"
+            checked={showAllHistory}
+            onCheckedChange={setShowAllHistory}
+          />
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>

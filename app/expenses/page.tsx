@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/select";
 import { Plus, MoreVertical, Edit, Trash2 } from "lucide-react";
 import { Download, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import { formatCurrency } from "@/lib/storage";
 import { useAppData } from "@/hooks/use-app-data";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -65,6 +66,7 @@ export default function ExpensesPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<any>(null);
   const [selectedMonth, setSelectedMonth] = useState(new Date());
+  const [showAllHistory, setShowAllHistory] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -89,7 +91,19 @@ export default function ExpensesPage() {
     );
   }
 
-  const expenses = data?.expenses || [];
+  const allExpenses = data?.expenses || [];
+
+  // Filter expenses based on showAllHistory toggle
+  const expenses = showAllHistory
+    ? allExpenses
+    : allExpenses.filter((expense) => {
+        const expenseDate = new Date(expense.date);
+        const currentDate = new Date();
+        return (
+          expenseDate.getMonth() === currentDate.getMonth() &&
+          expenseDate.getFullYear() === currentDate.getFullYear()
+        );
+      });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -149,7 +163,7 @@ export default function ExpensesPage() {
     }
   };
 
-  const totalExpenses = expenses.reduce(
+  const totalExpenses = allExpenses.reduce(
     (sum, expense) => sum + expense.amount,
     0
   );
@@ -159,7 +173,7 @@ export default function ExpensesPage() {
     const monthStart = new Date(month.getFullYear(), month.getMonth(), 1);
     const monthEnd = new Date(month.getFullYear(), month.getMonth() + 1, 0);
 
-    return expenses.filter((expense) => {
+    return allExpenses.filter((expense) => {
       const expenseDate = new Date(expense.date);
       return expenseDate >= monthStart && expenseDate <= monthEnd;
     });
@@ -193,7 +207,7 @@ export default function ExpensesPage() {
         "Amount",
         "Tax Deductible",
       ],
-      ...expenses.map((expense) => [
+      ...allExpenses.map((expense) => [
         expense.date,
         expense.description,
         expense.category,
@@ -222,6 +236,16 @@ export default function ExpensesPage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Expenses</h1>
           <p className="text-muted-foreground">Track your business expenses</p>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Label htmlFor="history-toggle" className="text-sm font-medium">
+            Show All History
+          </Label>
+          <Switch
+            id="history-toggle"
+            checked={showAllHistory}
+            onCheckedChange={setShowAllHistory}
+          />
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>

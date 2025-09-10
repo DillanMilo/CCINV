@@ -7,6 +7,7 @@ export interface AppData {
   expenses: Expense[];
   income: Income[];
   invoices: Invoice[];
+  fixedExpenses: FixedExpense[];
   profile: Profile;
   lastSync: string;
 }
@@ -65,11 +66,20 @@ export interface Profile {
   logo_url: string;
 }
 
+export interface FixedExpense {
+  id: string;
+  description: string;
+  amount: number;
+  category: string;
+  created_at: string;
+}
+
 // Initialize default data
 const defaultData: AppData = {
   expenses: [],
   income: [],
   invoices: [],
+  fixedExpenses: [],
   profile: {
     company_name: 'Creative Currents',
     ein: '',

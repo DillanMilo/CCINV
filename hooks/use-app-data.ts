@@ -1,7 +1,7 @@
 // Purpose: Simple data management hook without authentication
 
 import { useState, useEffect } from 'react';
-import { loadData, saveData, generateId, type AppData, type Expense, type Income, type Invoice, type Profile } from '@/lib/storage';
+import { loadData, saveData, generateId, type AppData, type Expense, type Income, type Invoice, type Profile, type FixedExpense } from '@/lib/storage';
 
 export function useAppData() {
   const [data, setData] = useState<AppData | null>(null);
@@ -132,6 +132,37 @@ export function useAppData() {
     console.log("Profile updated in state");
   };
 
+  const addFixedExpense = (fixedExpense: Omit<FixedExpense, 'id' | 'created_at'>) => {
+    if (!data) return;
+    const newFixedExpense: FixedExpense = {
+      ...fixedExpense,
+      id: generateId(),
+      created_at: new Date().toISOString(),
+    };
+    setData({
+      ...data,
+      fixedExpenses: [...data.fixedExpenses, newFixedExpense],
+    });
+  };
+
+  const updateFixedExpense = (id: string, updates: Partial<FixedExpense>) => {
+    if (!data) return;
+    setData({
+      ...data,
+      fixedExpenses: data.fixedExpenses.map(fixedExpense =>
+        fixedExpense.id === id ? { ...fixedExpense, ...updates } : fixedExpense
+      ),
+    });
+  };
+
+  const deleteFixedExpense = (id: string) => {
+    if (!data) return;
+    setData({
+      ...data,
+      fixedExpenses: data.fixedExpenses.filter(fixedExpense => fixedExpense.id !== id),
+    });
+  };
+
   return {
     data,
     loading,
@@ -145,5 +176,8 @@ export function useAppData() {
     updateInvoice,
     deleteInvoice,
     updateProfile,
+    addFixedExpense,
+    updateFixedExpense,
+    deleteFixedExpense,
   };
 }
