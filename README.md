@@ -93,9 +93,18 @@ hooks/
 - **shadcn/ui** for components
 - **Local Storage** for data persistence
 
+## Google Sheets Integration
+
+The app includes optional Google Sheets integration for automatic backup of financial records:
+
+- **Automatic Sync**: Income and expense records are automatically written to Google Sheets
+- **Real-time Backup**: All financial data is backed up in real-time to your spreadsheet
+- **Easy Setup**: Simple service account authentication with detailed setup instructions
+
+See [GOOGLE_SHEETS_SETUP.md](./GOOGLE_SHEETS_SETUP.md) for complete setup instructions.
+
 ## Future Enhancements
 
-- Cloud sync across devices
 - PDF invoice generation
 - Payment tracking
 - Financial reports and charts

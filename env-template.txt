@@ -7,3 +7,6 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key_here
 
 # Sync Key for Cross-Device Data Synchronization
 NEXT_PUBLIC_SYNC_KEY=your_simple_sync_password_here
+
+# Google Sheets Configuration
+SHEET_ID=your_google_sheet_id_here
