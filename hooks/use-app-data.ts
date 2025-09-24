@@ -17,55 +17,28 @@ export function useAppData() {
     });
   }, []);
 
-  // Set up real-time sync
+  // Set up real-time sync (temporarily disabled for debugging)
   useEffect(() => {
-    const channel = supabase
-      .channel('app_data_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'app_data',
-          filter: `sync_key=eq.${SYNC_KEY}`,
-        },
-        async (payload) => {
-          // Don't sync our own changes
-          if (isUpdatingRef.current) {
-            return;
-          }
-          
-          console.log('Received real-time update:', payload);
-          
-          // Reload data when changes are detected
-          try {
-            const freshData = await loadData();
-            setData(freshData);
-            console.log('Data synced from other device');
-          } catch (error) {
-            console.error('Error syncing data:', error);
-          }
-        }
-      )
-      .subscribe();
-
+    // Temporarily disabled to prevent race conditions during save
+    console.log('Real-time sync temporarily disabled for debugging');
     return () => {
-      supabase.removeChannel(channel);
+      // No cleanup needed
     };
   }, []);
 
   // Save data whenever it changes
   useEffect(() => {
-    if (data) {
+    if (data && !loading) {
       isUpdatingRef.current = true;
+      console.log('Saving data to Supabase...', data);
       saveData(data).finally(() => {
         // Allow sync after a delay to avoid race conditions
         setTimeout(() => {
           isUpdatingRef.current = false;
-        }, 1000);
+        }, 500);
       });
     }
-  }, [data]);
+  }, [data, loading]);
 
   // Helper functions
   const addExpense = (expense: Omit<Expense, 'id' | 'created_at'>) => {

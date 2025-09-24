@@ -1,6 +1,5 @@
-// Purpose: API endpoint for creating expense records and syncing to Google Sheets
+// Purpose: API endpoint for creating expense records
 import { NextRequest, NextResponse } from 'next/server';
-import { appendFinanceRecord } from '@/lib/google-sheets';
 
 export const dynamic = 'force-dynamic';
 
@@ -35,23 +34,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create the finance record
-    const financeRecord = {
-      date,
-      type: 'Expense' as const,
-      amount,
-      category,
-      description,
-      taxDeductible,
-    };
-
-    // Append to Google Sheets
-    await appendFinanceRecord(financeRecord);
-
+    // Simple response - no Google Sheets integration
     return NextResponse.json(
       { 
-        message: 'Expense record created successfully',
-        record: financeRecord 
+        message: 'Expense endpoint called successfully',
+        data: { date, amount, category, description, taxDeductible }
       },
       { status: 201 }
     );
