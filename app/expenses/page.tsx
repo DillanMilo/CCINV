@@ -202,12 +202,12 @@ export default function ExpensesPage() {
     const currentYear = new Date().getFullYear();
     const fromDate = `${currentYear}-01-01`;
     const toDate = `${currentYear}-12-31`;
-    
+
     // Use the API endpoint for server-side export
     const exportUrl = `/api/export/expenses?from=${fromDate}&to=${toDate}`;
-    
+
     // Download the CSV
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = exportUrl;
     link.download = `expenses-${currentYear}.csv`;
     document.body.appendChild(link);
