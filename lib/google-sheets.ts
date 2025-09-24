@@ -1,7 +1,15 @@
 // Purpose: Google Sheets API helper for appending financial records
-import { google } from 'googleapis';
-import { readFileSync } from 'fs';
-import { join } from 'path';
+// Note: Only import server-side modules when actually running on server
+let google: any;
+let readFileSync: any;
+let join: any;
+
+// Dynamic imports for server-side only
+if (typeof window === 'undefined') {
+  google = require('googleapis').google;
+  readFileSync = require('fs').readFileSync;
+  join = require('path').join;
+}
 
 export interface FinanceRecord {
   date: string;              // 'YYYY-MM-DD'
@@ -18,6 +26,11 @@ export interface FinanceRecord {
  * @throws Error if authentication or API call fails
  */
 export async function appendFinanceRecord(record: FinanceRecord): Promise<void> {
+  // Only run on server-side
+  if (typeof window !== 'undefined') {
+    throw new Error('Google Sheets API can only be called from server-side');
+  }
+
   try {
     // Load service account credentials
     const serviceAccountPath = join(process.cwd(), 'lib', 'service-account.json');
