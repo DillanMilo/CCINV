@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAppData } from "@/hooks/use-app-data";
 
 export default function DebugPage() {
-  const { data, loading } = useAppData();
+  const { data, loading, forceRefresh } = useAppData();
   const [localStorageData, setLocalStorageData] = useState<any>(null);
 
   const checkLocalStorage = () => {
@@ -55,9 +55,14 @@ export default function DebugPage() {
             <CardTitle>Local Storage Data</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Button onClick={checkLocalStorage}>
-              Check Local Storage
-            </Button>
+            <div className="flex gap-2">
+              <Button onClick={checkLocalStorage}>
+                Check Local Storage
+              </Button>
+              <Button onClick={forceRefresh} variant="outline">
+                Force Refresh
+              </Button>
+            </div>
             {localStorageData && (
               <>
                 <div>

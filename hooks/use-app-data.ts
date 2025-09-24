@@ -105,11 +105,13 @@ export function useAppData() {
 
   const addInvoice = (invoice: Omit<Invoice, 'id' | 'created_at'>) => {
     if (!data) return;
+    console.log('Adding new invoice:', invoice);
     const newInvoice: Invoice = {
       ...invoice,
       id: generateId(),
       created_at: new Date().toISOString(),
     };
+    console.log('Generated invoice with ID:', newInvoice.id);
     setData({
       ...data,
       invoices: [...data.invoices, newInvoice],
@@ -118,11 +120,14 @@ export function useAppData() {
 
   const updateInvoice = (id: string, updates: Partial<Invoice>) => {
     if (!data) return;
+    console.log('Updating invoice:', id, 'with updates:', updates);
+    const updatedInvoices = data.invoices.map(invoice =>
+      invoice.id === id ? { ...invoice, ...updates } : invoice
+    );
+    console.log('Updated invoices:', updatedInvoices);
     setData({
       ...data,
-      invoices: data.invoices.map(invoice =>
-        invoice.id === id ? { ...invoice, ...updates } : invoice
-      ),
+      invoices: updatedInvoices,
     });
   };
 
@@ -181,6 +186,16 @@ export function useAppData() {
     });
   };
 
+  const forceRefresh = async () => {
+    setLoading(true);
+    try {
+      const freshData = await loadData();
+      setData(freshData);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     data,
     loading,
@@ -197,5 +212,6 @@ export function useAppData() {
     addFixedExpense,
     updateFixedExpense,
     deleteFixedExpense,
+    forceRefresh,
   };
 }
