@@ -20,7 +20,7 @@ import { useAppData } from "@/hooks/use-app-data";
 import { useRouter } from "next/navigation";
 
 export default function NewInvoicePage() {
-  const { data, addInvoice } = useAppData();
+  const { data, addInvoice, loading } = useAppData();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -44,6 +44,13 @@ export default function NewInvoicePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Don't submit if data is still loading
+    if (loading) {
+      alert("Please wait for data to load before creating an invoice.");
+      return;
+    }
+    
     setIsSubmitting(true);
 
     // Validate required fields
@@ -73,7 +80,14 @@ export default function NewInvoicePage() {
     try {
       console.log("Creating invoice with data:", formData);
 
-      await addInvoice({
+      // Check if data is loaded
+      if (!data) {
+        alert("Data not loaded yet. Please wait and try again.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      addInvoice({
         invoice_number: formData.invoice_number,
         client_name: formData.client_name,
         client_email: formData.client_email,
@@ -85,7 +99,12 @@ export default function NewInvoicePage() {
       });
 
       console.log("Invoice created successfully");
-      router.push("/invoices");
+      
+      // Wait a moment for the data to save, then redirect
+      setTimeout(() => {
+        router.push("/invoices");
+      }, 1000);
+      
     } catch (error) {
       console.error("Error creating invoice:", error);
       alert("Failed to create invoice. Please try again.");
@@ -133,6 +152,19 @@ export default function NewInvoicePage() {
 
   const subtotal = calculateSubtotal();
   const total = subtotal;
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <h3 className="text-lg font-semibold mb-2">Loading...</h3>
+          <p className="text-muted-foreground">
+            Please wait while we load your data.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -374,8 +406,8 @@ export default function NewInvoicePage() {
           >
             Cancel
           </Button>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Creating..." : "Create Invoice"}
+          <Button type="submit" disabled={isSubmitting || loading}>
+            {isSubmitting ? "Creating..." : loading ? "Loading..." : "Create Invoice"}
           </Button>
         </div>
       </form>
