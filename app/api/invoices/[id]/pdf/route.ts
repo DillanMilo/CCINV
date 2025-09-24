@@ -247,9 +247,36 @@ export async function GET(
                 padding: 1in;
               }
             }
+            
+            .print-button {
+              position: fixed;
+              top: 20px;
+              right: 20px;
+              background: #1f2937;
+              color: white;
+              border: none;
+              padding: 12px 24px;
+              border-radius: 6px;
+              cursor: pointer;
+              font-size: 14px;
+              font-weight: 600;
+              z-index: 1000;
+              box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            }
+            
+            .print-button:hover {
+              background: #374151;
+            }
+            
+            @media print {
+              .print-button {
+                display: none;
+              }
+            }
           </style>
         </head>
         <body>
+          <button class="print-button" onclick="window.print()">Print / Save as PDF</button>
           <div class="header">
             <div class="logo-section">
               ${profile.logo_url ? `<img src="${profile.logo_url}" class="logo" alt="Company Logo" />` : ''}
@@ -341,13 +368,23 @@ export async function GET(
           <div class="footer">
             Thank you for your business!
           </div>
+          
+          <script>
+            // Auto-print after a short delay
+            setTimeout(() => {
+              window.print();
+            }, 1000);
+          </script>
         </body>
       </html>
     `;
 
+    // Return HTML with proper headers for PDF generation
     return new NextResponse(html, {
       headers: {
         'Content-Type': 'text/html',
+        'Content-Disposition': `inline; filename="invoice-${invoice.invoice_number}.html"`,
+        'Cache-Control': 'no-cache',
       },
     });
   } catch (error) {
