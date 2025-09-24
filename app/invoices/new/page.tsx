@@ -44,13 +44,13 @@ export default function NewInvoicePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Don't submit if data is still loading
     if (loading) {
       alert("Please wait for data to load before creating an invoice.");
       return;
     }
-    
+
     setIsSubmitting(true);
 
     // Validate required fields
@@ -99,12 +99,11 @@ export default function NewInvoicePage() {
       });
 
       console.log("Invoice created successfully");
-      
+
       // Wait a moment for the data to save, then redirect
       setTimeout(() => {
         router.push("/invoices");
       }, 1000);
-      
     } catch (error) {
       console.error("Error creating invoice:", error);
       alert("Failed to create invoice. Please try again.");
@@ -407,7 +406,11 @@ export default function NewInvoicePage() {
             Cancel
           </Button>
           <Button type="submit" disabled={isSubmitting || loading}>
-            {isSubmitting ? "Creating..." : loading ? "Loading..." : "Create Invoice"}
+            {isSubmitting
+              ? "Creating..."
+              : loading
+              ? "Loading..."
+              : "Create Invoice"}
           </Button>
         </div>
       </form>
