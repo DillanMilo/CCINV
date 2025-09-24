@@ -168,27 +168,21 @@ export default function IncomePage() {
   };
 
   const handleExport = () => {
-    const csvContent = [
-      ["Date", "Description", "Category", "Amount"],
-      ...allIncome.map((incomeRecord) => [
-        incomeRecord.date,
-        incomeRecord.description,
-        incomeRecord.category,
-        incomeRecord.amount.toString(),
-      ]),
-    ]
-      .map((row) => row.join(","))
-      .join("\n");
-
-    const blob = new Blob([csvContent], { type: "text/csv" });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `income-${new Date().toISOString().split("T")[0]}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
+    // Get current year start and end dates
+    const currentYear = new Date().getFullYear();
+    const fromDate = `${currentYear}-01-01`;
+    const toDate = `${currentYear}-12-31`;
+    
+    // Use the API endpoint for server-side export
+    const exportUrl = `/api/export/income?from=${fromDate}&to=${toDate}`;
+    
+    // Download the CSV
+    const link = document.createElement('a');
+    link.href = exportUrl;
+    link.download = `income-${currentYear}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (

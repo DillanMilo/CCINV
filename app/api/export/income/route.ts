@@ -1,6 +1,6 @@
 // Purpose: CSV export endpoint for income records
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase-client';
+import { supabase, SYNC_KEY } from '@/lib/supabase-client';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,30 +17,45 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Load data from Supabase
+    const { data: supabaseData, error } = await supabase
+      .from('app_data')
+      .select('*')
+      .eq('sync_key', SYNC_KEY)
+      .single();
 
-    
-    // TODO: Replace with actual Supabase query when income table exists
-    const mockData = [
-      {
-        date: '2024-12-15',
-        description: 'Website Development - Acme Corp',
-        category: 'Services',
-        amount: 2500.00,
-      },
-      {
-        date: '2024-12-20',
-        description: 'Client appreciation tip',
-        category: 'Tips',
-        amount: 150.00,
-      },
-    ];
+    if (error) {
+      console.error('Error loading data:', error);
+      return NextResponse.json(
+        { error: 'Failed to load income data' },
+        { status: 500 }
+      );
+    }
+
+    if (!supabaseData) {
+      return NextResponse.json(
+        { error: 'No data found' },
+        { status: 404 }
+      );
+    }
+
+    const appData = JSON.parse(supabaseData.data);
+    const allIncome = appData.income || [];
+
+    // Filter income by date range
+    const filteredIncome = allIncome.filter((income: any) => {
+      const incomeDate = new Date(income.date);
+      const fromDate = new Date(from);
+      const toDate = new Date(to);
+      return incomeDate >= fromDate && incomeDate <= toDate;
+    });
 
     // Generate CSV
     const headers = ['Date', 'Description', 'Category', 'Amount'];
     const csvRows = [
       headers.join(','),
-      ...mockData.map(row => 
-        [row.date, `"${row.description}"`, row.category, row.amount].join(',')
+      ...filteredIncome.map((income: any) => 
+        [income.date, `"${income.description}"`, income.category, income.amount].join(',')
       )
     ];
 

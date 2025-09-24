@@ -10,6 +10,8 @@ export async function GET(
 ) {
   try {
     const invoiceId = params.id;
+    console.log('PDF request for invoice ID:', invoiceId);
+    console.log('Using SYNC_KEY:', SYNC_KEY);
     
     // Load data from Supabase
     const { data: supabaseData, error } = await supabase
@@ -20,8 +22,14 @@ export async function GET(
 
     if (error) {
       console.error('Error loading data:', error);
+      console.error('Supabase error details:', {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint
+      });
       return NextResponse.json(
-        { error: 'Failed to load invoice data' },
+        { error: 'Failed to load invoice data', details: error.message },
         { status: 500 }
       );
     }

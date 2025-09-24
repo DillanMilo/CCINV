@@ -198,36 +198,21 @@ export default function ExpensesPage() {
   };
 
   const handleExport = () => {
-    const csvContent = [
-      [
-        "Date",
-        "Description",
-        "Category",
-        "Merchant",
-        "Amount",
-        "Tax Deductible",
-      ],
-      ...allExpenses.map((expense) => [
-        expense.date,
-        expense.description,
-        expense.category,
-        expense.merchant || "",
-        expense.amount.toString(),
-        expense.tax_deductible ? "Yes" : "No",
-      ]),
-    ]
-      .map((row) => row.join(","))
-      .join("\n");
-
-    const blob = new Blob([csvContent], { type: "text/csv" });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `expenses-${new Date().toISOString().split("T")[0]}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
+    // Get current year start and end dates
+    const currentYear = new Date().getFullYear();
+    const fromDate = `${currentYear}-01-01`;
+    const toDate = `${currentYear}-12-31`;
+    
+    // Use the API endpoint for server-side export
+    const exportUrl = `/api/export/expenses?from=${fromDate}&to=${toDate}`;
+    
+    // Download the CSV
+    const link = document.createElement('a');
+    link.href = exportUrl;
+    link.download = `expenses-${currentYear}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (

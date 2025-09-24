@@ -1,6 +1,6 @@
 // Purpose: CSV export endpoint for expense records
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase-client';
+import { supabase, SYNC_KEY } from '@/lib/supabase-client';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,32 +17,52 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Load data from Supabase
+    const { data: supabaseData, error } = await supabase
+      .from('app_data')
+      .select('*')
+      .eq('sync_key', SYNC_KEY)
+      .single();
 
-    
-    // TODO: Replace with actual Supabase query when expenses table exists
-    const mockData = [
-      {
-        date: '2024-12-01',
-        description: 'Adobe Creative Cloud Subscription',
-        category: 'Software',
-        merchant: 'Adobe',
-        amount: 89.99,
-      },
-      {
-        date: '2024-12-15',
-        description: 'Client meeting lunch',
-        category: 'Meals & Entertainment',
-        merchant: 'Corner Bistro',
-        amount: 45.20,
-      },
-    ];
+    if (error) {
+      console.error('Error loading data:', error);
+      return NextResponse.json(
+        { error: 'Failed to load expense data' },
+        { status: 500 }
+      );
+    }
+
+    if (!supabaseData) {
+      return NextResponse.json(
+        { error: 'No data found' },
+        { status: 404 }
+      );
+    }
+
+    const appData = JSON.parse(supabaseData.data);
+    const allExpenses = appData.expenses || [];
+
+    // Filter expenses by date range
+    const filteredExpenses = allExpenses.filter((expense: any) => {
+      const expenseDate = new Date(expense.date);
+      const fromDate = new Date(from);
+      const toDate = new Date(to);
+      return expenseDate >= fromDate && expenseDate <= toDate;
+    });
 
     // Generate CSV
-    const headers = ['Date', 'Description', 'Category', 'Merchant', 'Amount'];
+    const headers = ['Date', 'Description', 'Category', 'Merchant', 'Amount', 'Tax Deductible'];
     const csvRows = [
       headers.join(','),
-      ...mockData.map(row => 
-        [row.date, `"${row.description}"`, row.category, row.merchant || '', row.amount].join(',')
+      ...filteredExpenses.map((expense: any) => 
+        [
+          expense.date, 
+          `"${expense.description}"`, 
+          expense.category, 
+          expense.merchant || '', 
+          expense.amount,
+          expense.tax_deductible ? 'Yes' : 'No'
+        ].join(',')
       )
     ];
 
