@@ -27,6 +27,7 @@ function RootLayoutClient({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   const isActiveRoute = (href: string) => {
+    if (!pathname) return false;
     if (href === "/") {
       return pathname === "/";
     }
