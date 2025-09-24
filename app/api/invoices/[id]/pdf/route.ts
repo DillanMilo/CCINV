@@ -382,9 +382,11 @@ export async function GET(
     // Return HTML with proper headers for PDF generation
     return new NextResponse(html, {
       headers: {
-        'Content-Type': 'text/html',
+        'Content-Type': 'text/html; charset=utf-8',
         'Content-Disposition': `inline; filename="invoice-${invoice.invoice_number}.html"`,
-        'Cache-Control': 'no-cache',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
       },
     });
   } catch (error) {

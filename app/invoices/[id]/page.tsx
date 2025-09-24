@@ -125,12 +125,11 @@ export default function InvoiceDetailPage({
           <Button
             variant="outline"
             onClick={() => {
-              const link = document.createElement("a");
-              link.href = `/api/invoices/${invoiceId}/pdf`;
-              link.download = `invoice-${invoice.invoice_number}.pdf`;
-              document.body.appendChild(link);
-              link.click();
-              document.body.removeChild(link);
+              // Open PDF download page in new window
+              const pdfWindow = window.open(`/invoices/${invoiceId}/pdf-download`, '_blank');
+              if (!pdfWindow) {
+                alert('Please allow popups to download the PDF');
+              }
             }}
           >
             <Download className="h-4 w-4 mr-2" />
