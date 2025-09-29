@@ -156,16 +156,23 @@ export function useAppData() {
   };
 
   const addFixedExpense = (fixedExpense: Omit<FixedExpense, 'id' | 'created_at'>) => {
-    if (!data) return;
+    console.log('addFixedExpense called with:', fixedExpense);
+    if (!data) {
+      console.log('No data available, cannot add fixed expense');
+      return;
+    }
+    console.log('Current fixedExpenses:', data.fixedExpenses);
     const newFixedExpense: FixedExpense = {
       ...fixedExpense,
       id: generateId(),
       created_at: new Date().toISOString(),
     };
+    console.log('New fixed expense:', newFixedExpense);
     setData({
       ...data,
       fixedExpenses: [...data.fixedExpenses, newFixedExpense],
     });
+    console.log('Fixed expense added to state');
   };
 
   const updateFixedExpense = (id: string, updates: Partial<FixedExpense>) => {
