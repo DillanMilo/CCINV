@@ -73,10 +73,17 @@ export default function FixedExpensesPage() {
     );
   }
 
+  console.log('FixedExpensesPage - data:', data);
+  console.log('FixedExpensesPage - loading:', loading);
+  console.log('FixedExpensesPage - fixedExpenses:', data?.fixedExpenses);
+
   const fixedExpenses = data?.fixedExpenses || [];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    console.log('Form submitted with data:', formData);
+    console.log('Current data state:', data);
 
     // Validate required fields
     if (!formData.description || !formData.amount || !formData.category) {
