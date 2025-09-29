@@ -80,28 +80,30 @@ export default function FixedExpensesPage() {
 
     // Validate required fields
     if (!formData.description || !formData.amount || !formData.category) {
-      alert('Please fill in all required fields (Description, Amount, Category)');
+      alert(
+        "Please fill in all required fields (Description, Amount, Category)"
+      );
       return;
     }
 
     // Validate amount is a positive number
     const amount = parseFloat(formData.amount);
     if (isNaN(amount) || amount <= 0) {
-      alert('Please enter a valid positive amount');
+      alert("Please enter a valid positive amount");
       return;
     }
 
-    console.log('Adding fixed expense:', formData);
+    console.log("Adding fixed expense:", formData);
 
     if (editingExpense) {
-      console.log('Updating fixed expense:', editingExpense.id);
+      console.log("Updating fixed expense:", editingExpense.id);
       updateFixedExpense(editingExpense.id, {
         description: formData.description,
         amount: amount,
         category: formData.category,
       });
     } else {
-      console.log('Creating new fixed expense');
+      console.log("Creating new fixed expense");
       addFixedExpense({
         description: formData.description,
         amount: amount,
