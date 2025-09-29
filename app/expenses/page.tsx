@@ -210,7 +210,9 @@ export default function ExpensesPage() {
     // Download the CSV
     const link = document.createElement("a");
     link.href = exportUrl;
-    link.download = `expenses-${currentYear}${includeFixedExpenses ? '-with-fixed' : ''}.csv`;
+    link.download = `expenses-${currentYear}${
+      includeFixedExpenses ? "-with-fixed" : ""
+    }.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -497,7 +499,9 @@ export default function ExpensesPage() {
             <Checkbox
               id="include-fixed"
               checked={includeFixedExpenses}
-              onCheckedChange={(checked) => setIncludeFixedExpenses(checked as boolean)}
+              onCheckedChange={(checked) =>
+                setIncludeFixedExpenses(checked as boolean)
+              }
             />
             <Label htmlFor="include-fixed" className="text-sm font-medium">
               Include Fixed Expenses
@@ -509,7 +513,9 @@ export default function ExpensesPage() {
           </Button>
           <p className="text-sm text-muted-foreground">
             Export your expenses as a CSV file. Perfect for monthly tracking and
-            tax preparation. {includeFixedExpenses && "Fixed expenses will be included as monthly recurring items."}
+            tax preparation.{" "}
+            {includeFixedExpenses &&
+              "Fixed expenses will be included as monthly recurring items."}
           </p>
         </CardContent>
       </Card>
