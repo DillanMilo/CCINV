@@ -9,6 +9,7 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const from = searchParams.get('from');
     const to = searchParams.get('to');
+    const includeFixed = searchParams.get('includeFixed') === 'true';
 
     if (!from || !to) {
       return NextResponse.json(
@@ -41,6 +42,7 @@ export async function GET(request: NextRequest) {
 
     const appData = JSON.parse(supabaseData.data);
     const allExpenses = appData.expenses || [];
+    const fixedExpenses = appData.fixedExpenses || [];
 
     // Filter expenses by date range
     const filteredExpenses = allExpenses.filter((expense: any) => {
@@ -50,21 +52,39 @@ export async function GET(request: NextRequest) {
       return expenseDate >= fromDate && expenseDate <= toDate;
     });
 
-    // Generate CSV
-    const headers = ['Date', 'Description', 'Category', 'Merchant', 'Amount', 'Tax Deductible'];
-    const csvRows = [
-      headers.join(','),
-      ...filteredExpenses.map((expense: any) => 
+    // Generate CSV rows
+    const headers = ['Date', 'Description', 'Category', 'Merchant', 'Amount', 'Tax Deductible', 'Type'];
+    const csvRows = [headers.join(',')];
+
+    // Add regular expenses
+    const regularExpenseRows = filteredExpenses.map((expense: any) => 
+      [
+        expense.date, 
+        `"${expense.description}"`, 
+        expense.category, 
+        expense.merchant || '', 
+        expense.amount,
+        expense.tax_deductible ? 'Yes' : 'No',
+        'Regular'
+      ].join(',')
+    );
+    csvRows.push(...regularExpenseRows);
+
+    // Add fixed expenses if requested
+    if (includeFixed) {
+      const fixedExpenseRows = fixedExpenses.map((fixedExpense: any) => 
         [
-          expense.date, 
-          `"${expense.description}"`, 
-          expense.category, 
-          expense.merchant || '', 
-          expense.amount,
-          expense.tax_deductible ? 'Yes' : 'No'
+          'Monthly', 
+          `"${fixedExpense.description} (Fixed)"`, 
+          fixedExpense.category, 
+          '', 
+          fixedExpense.amount,
+          'Yes', // Fixed expenses are typically tax deductible
+          'Fixed'
         ].join(',')
-      )
-    ];
+      );
+      csvRows.push(...fixedExpenseRows);
+    }
 
     const csv = csvRows.join('\n');
 

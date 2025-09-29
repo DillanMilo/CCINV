@@ -67,6 +67,7 @@ export default function ExpensesPage() {
   const [editingExpense, setEditingExpense] = useState<any>(null);
   const [selectedMonth, setSelectedMonth] = useState(new Date());
   const [showAllHistory, setShowAllHistory] = useState(false);
+  const [includeFixedExpenses, setIncludeFixedExpenses] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -204,12 +205,12 @@ export default function ExpensesPage() {
     const toDate = `${currentYear}-12-31`;
 
     // Use the API endpoint for server-side export
-    const exportUrl = `/api/export/expenses?from=${fromDate}&to=${toDate}`;
+    const exportUrl = `/api/export/expenses?from=${fromDate}&to=${toDate}&includeFixed=${includeFixedExpenses}`;
 
     // Download the CSV
     const link = document.createElement("a");
     link.href = exportUrl;
-    link.download = `expenses-${currentYear}.csv`;
+    link.download = `expenses-${currentYear}${includeFixedExpenses ? '-with-fixed' : ''}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -491,14 +492,24 @@ export default function ExpensesPage() {
             Export Expenses
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="include-fixed"
+              checked={includeFixedExpenses}
+              onCheckedChange={(checked) => setIncludeFixedExpenses(checked as boolean)}
+            />
+            <Label htmlFor="include-fixed" className="text-sm font-medium">
+              Include Fixed Expenses
+            </Label>
+          </div>
           <Button onClick={handleExport} className="w-full sm:w-auto">
             <Download className="h-4 w-4 mr-2" />
             Export CSV
           </Button>
-          <p className="text-sm text-muted-foreground mt-2">
+          <p className="text-sm text-muted-foreground">
             Export your expenses as a CSV file. Perfect for monthly tracking and
-            tax preparation.
+            tax preparation. {includeFixedExpenses && "Fixed expenses will be included as monthly recurring items."}
           </p>
         </CardContent>
       </Card>
